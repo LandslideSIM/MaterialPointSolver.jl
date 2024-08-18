@@ -10,6 +10,9 @@
 |               2. uGIMPBasis                                                              |
 +==========================================================================================#
 
+export linearBasis, uGIMPbasis
+export uGIMPbasisx, uGIMPbasisy, uGIMPbasisz
+
 """
     linearBasis(Δx::T2, h::T2)
 
@@ -24,13 +27,15 @@ and `h` is the grid spacing.
     # dN1 = -sign(Δx)/h
     # Ni  = c1*N1
     # dN  = c1*dN1
-    if abs(Δx) ≤ h
-        Ni = T2(1.0) - abs(Δx) / h
-        dN = -sign(Δx) / h
-    else
-        Ni = T2(0.0)
-        dN = T2(0.0)
-    end
+    # if abs(Δx) ≤ h
+    #     Ni = T2(1.0) - abs(Δx) / h
+    #     dN = -sign(Δx) / h
+    # else
+    #     Ni = T2(0.0)
+    #     dN = T2(0.0)
+    # end
+    Ni = T2(1.0) - abs(Δx) / h
+    dN = -sign(Δx) / h
     return T2(Ni), T2(dN)
 end
 

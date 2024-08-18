@@ -9,6 +9,8 @@
 |  Functions  : meshbuilder()                                                              |
 +==========================================================================================#
 
+export meshbuilder
+
 function meshbuilder(x::AbstractRange, y::AbstractRange)
     x_tmp = repeat(x', length(y), 1) |> vec
     y_tmp = repeat(y , 1, length(x)) |> vec

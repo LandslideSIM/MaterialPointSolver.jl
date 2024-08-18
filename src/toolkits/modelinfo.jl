@@ -20,6 +20,8 @@
 |               12. check_datasize                                                         |
 +==========================================================================================#
 
+export export_model, import_model, check_datasize, @memcheck
+
 function json2args2D(jsondata, iInt, iFloat)
     return Args2D{iInt, iFloat}(
         Ttol         = jsondata.Ttol,
@@ -333,6 +335,8 @@ function json2vboundary2D(jsondata, iInt, iFloat)
         Vx_w_Val = jsondata.Vx_w_Val,
         Vy_w_Idx = jsondata.Vy_w_Idx,
         Vy_w_Val = jsondata.Vy_w_Val,
+        smdomain = jsondata.smdomain,
+        smlength = jsondata.smlength,
         tmp1     = jsondata.tmp1,
         tmp2     = jsondata.tmp2
     )
@@ -352,6 +356,8 @@ function json2vboundary3D(jsondata, iInt, iFloat)
         Vy_w_Val = jsondata.Vy_w_Val,
         Vz_w_Idx = jsondata.Vz_w_Idx,
         Vz_w_Val = jsondata.Vz_w_Val,
+        smdomain = jsondata.smdomain,
+        smlength = jsondata.smlength,
         tmp1     = jsondata.tmp1,
         tmp2     = jsondata.tmp2
     )
@@ -441,10 +447,6 @@ end
 
 macro memcheck(expr)
     return quote        
-        # 检查是否是CuArray并转换
-        if isa($(esc(expr)), CuArray)
-            $(esc(expr)) = Array($(esc(expr)))
-        end
         # 计算内存大小
         data = Base.summarysize($(esc(expr))) / 1024^3
         data_str = @sprintf("%.2f GiB", data)
@@ -452,6 +454,3 @@ macro memcheck(expr)
         @info "💾 $data_str"
     end
 end
-
-
-

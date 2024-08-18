@@ -11,6 +11,9 @@
 |               3. Base.show                                                               |
 +==========================================================================================#
 
+export ParticleProperty
+export GPUParticleProperty
+
 """
     ParticleProperty{T1, T2}
 

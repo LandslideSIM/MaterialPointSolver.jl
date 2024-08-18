@@ -13,6 +13,9 @@
 |               5. Base.show                                                               |
 +==========================================================================================#
 
+export VBoundary2D, VBoundary3D
+export GPUVBoundary2D, GPUVBoundary3D
+
 """
     VBoundary2D{T1, T2}
 
@@ -29,6 +32,8 @@ This struct will save the values for 2D velocity boundary conditions.
     Vx_w_Val::Array{T2, 1} = [0]
     Vy_w_Idx::Array{T1, 1} = [0]
     Vy_w_Val::Array{T2, 1} = [0]
+    smdomain::Array{T2, 1} = [0, 0, 0, 0]
+    smlength::T2           = T2(0)
     tmp1    ::T1           = T1(0)
     tmp2    ::T2           = T2(0)
 end
@@ -52,6 +57,8 @@ struct GPUVBoundary2D{T1,
     Vx_w_Val::T4
     Vy_w_Idx::T3
     Vy_w_Val::T4
+    smdomain::T4
+    smlength::T2
     tmp1    ::T1
     tmp2    ::T2
 end

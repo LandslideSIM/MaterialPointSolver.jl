@@ -13,6 +13,9 @@
 |               5. Base.show                                                               |
 +==========================================================================================#
 
+export Particle2D, Particle3D
+export GPUParticle2D, GPUParticle3D
+
 """
     Particle2D{T1, T2}
 

@@ -10,6 +10,8 @@
 |               2. hyE! [3D]                                                               |
 +==========================================================================================#
 
+export hyE!
+
 """
     hyE!(mp::KernelParticle2D{T1, T2}, pts_attr::KernelParticleProperty{T1, T2})
 

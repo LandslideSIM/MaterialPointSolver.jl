@@ -6,17 +6,12 @@
 |  Programmer : Zenan Huo                                                                  |
 |  Start Date : 01/01/2022                                                                 |
 |  Affiliation: Risk Group, UNIL-ISTE                                                      |
-|  Functions  : 1. cpu_info                                                                |
-|               2. gpu_info                                                                |
-|               3. gpus_info                                                               |
+|  Functions  : 1. cpuinfo                                                                 |
 +==========================================================================================#
 
-function cpu_info(; verbose=false)
-    display(CpuId.cpuinfo())
-    verbose == true ? (println(); display(CpuId.cpufeaturetable())) : nothing
-    return nothing
-end
+export cpuinfo
 
+const cpuinfo()  = SysInfo.sysinfo() 
 # todo:
 # single GPU
 # multi GPU

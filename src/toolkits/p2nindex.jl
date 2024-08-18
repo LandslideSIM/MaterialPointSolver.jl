@@ -10,6 +10,8 @@
 |               2. getP2N_uGIMP [2D & 3D]                                                  |
 +==========================================================================================#
 
+export getP2N_linear, getP2N_uGIMP
+
 """
     getP2N_linear(grid::KernelGrid2D{T1, T2}, p2c::T1, iy::Int32)
 
@@ -33,7 +35,7 @@ tab_p2n = T1.([0 1; 0 0; node_num_y 1; node_num_y 0])
     grid::KernelGrid2D{T1, T2}, 
     p2c ::T1, 
     iy  ::Int32
-) where {T1,T2}
+) where {T1, T2}
     col_id = cld(p2c, grid.cell_num_y)            # belongs to which column
     row_id = p2c - (col_id - 1) * grid.cell_num_y # belongs to which row
     ltn_id = col_id * grid.node_num_y - row_id    # top left node's index  

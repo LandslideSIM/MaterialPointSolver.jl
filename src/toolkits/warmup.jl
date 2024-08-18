@@ -9,8 +9,9 @@
 |  Functions  : warmup                                                                     |
 +==========================================================================================#
 
-"""
+export warmup
 
+"""
     warmup(devicetype::Symbol; ID=0)
 
 Description:
@@ -19,13 +20,7 @@ The minimal example of executing core functionality is used to reduce the first-
 time. `devicetype` can be one of `:CPU`, `:CUDA`, or `:ROCm`. Note that on the GPU from AMD,
 the device id start from `1`.`
 """
-function warmup(devicetype::Symbol; ID=0)
-    if devicetype==:CUDA
-        CUDA.device!(ID)
-    elseif devicetype==:ROCm
-        ID == 0 ? ID = 1 : nothing
-        AMDGPU.device!(AMDGPU.devices()[ID])
-    end
+function warmup(::Val{:CPU}; ID::Int=0)
     rtsdir = joinpath(homedir(), "MaterialPointSolverTEMP_$(ID)/")
     mkpath(rtsdir)
     init_grid_space_x = 1
@@ -74,7 +69,7 @@ function warmup(devicetype::Symbol; ID=0)
         hdf5         = false,
         hdf5_step    = init_step,
         MVL          = true,
-        device       = devicetype,
+        device       = :CPU,
         coupling     = :OS,
         scheme       = init_scheme,
         basis        = init_basis

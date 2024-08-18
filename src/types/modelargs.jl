@@ -11,6 +11,8 @@
 |               2. Base.show                                                               |
 +==========================================================================================#
 
+export Args2D, Args3D
+
 """
     Args2D{T1, T2} <: MODELARGS
 
@@ -77,7 +79,7 @@ This struct is used to store the parameters of the solver, it is a mutable struc
         project_path = abspath(project_path)
         rm(project_path, recursive=true, force=true); mkpath(project_path)
         cop_set = [:OS, :TS]
-        bas_set = [:uGIMP, :linear]
+        bas_set = [:uGIMP, :linear, :gslinear]
         dev_set = [:CPU, :CUDA, :ROCm, :oneAPI, :Metal]
         tis_set = [:fixed, :auto]
         # parameter check

@@ -20,7 +20,7 @@ function procedure!(args    ::MODELARGS,
                             ::Val{:OS},
                             ::Val{:MUSL}) where {T2}
     Ti < args.Te ? G = args.gravity / args.Te * Ti : G = args.gravity
-    dev = getBackend(args)
+    dev = getBackend(Val(args.device))
     resetgridstatus_OS!(dev)(ndrange=grid.node_num, grid)
     args.device == :CPU && args.basis == :uGIMP ? 
         resetmpstatus_OS_CPU!(dev)(ndrange=mp.num, grid, mp, Val(args.basis)) :

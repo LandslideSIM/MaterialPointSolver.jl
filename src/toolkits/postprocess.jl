@@ -10,6 +10,8 @@
 |               3. animation() [2D & 3D]                                                   |
 +==========================================================================================#
 
+export savevtu, animation
+
 """
     savevtu(args::Args2D, grid::Grid2D, mp::Particle2D, pts_attr::ParticleProperty)
 

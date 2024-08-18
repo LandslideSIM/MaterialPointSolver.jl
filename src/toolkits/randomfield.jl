@@ -7,12 +7,14 @@
 |  Programmer : Zenan Huo                                                                  |
 |  Start Date : 01/01/2022                                                                 |
 |  Affiliation: Risk Group, UNIL-ISTE                                                      |
-|  Functions  : 1. grf_gc                                                                  |
-|               2. grf_ec                                                                  |
+|  Functions  : 1. grf_gc!                                                                 |
+|               2. grf_ec!                                                                 |
 |  References : Räss, Ludovic, Dmitriy Kolyukhin, and Alexander Minakov. "Efficient        |
 |               parallel random field generator for large 3-D geophysical problems."       |
 |               Computers & geosciences 131 (2019): 158-169.                               |
 +==========================================================================================#
+
+export grf_gc!, grf_ec!
 
 @kernel inbounds=true function compute1!(Yf, a, b, V1, V2, V3, pts)
     i = @index(Global)

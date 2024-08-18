@@ -34,7 +34,6 @@ export resetgridstatus_OS!, resetmpstatus_OS!, resetmpstatus_OS_CPU!, P2G_OS!,
     solvegrid_OS!, doublemapping1_OS!, doublemapping2_OS!, doublemapping3_OS!, G2P_OS!, 
     vollock1_OS!, vollock2_OS!
 
-
 """
     resetgridstatus_OS!(grid::KernelGrid2D{T1, T2})
 

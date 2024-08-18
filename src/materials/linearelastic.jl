@@ -10,6 +10,8 @@
 |               2. liE! [3D]                                                               |
 +==========================================================================================#
 
+export liE!
+
 """
     liE!(mp::KernelParticle2D{T1, T2}, pts_attr::KernelParticleProperty{T1, T2})
 
