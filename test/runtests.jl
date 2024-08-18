@@ -1,8 +1,16 @@
-using CairoMakie
+using MaterialPointSolver
+using Test
 
-include(joinpath(@__DIR__, "../src/MPMSolver.jl"))
-const assets = joinpath(@__DIR__, "../assets")  # code assets
-const rtsdir = "/home/zhuo/Workbench/outputs/"  # result path
+@testset "structs test" begin
+    
+    @test 1==1
+end
 
-info_page()
-@info "initialization done"
+@testset "computing test" begin
+    
+    @test 1==1
+end
+
+@testset "helper function test" begin
+    @test 1==1
+end

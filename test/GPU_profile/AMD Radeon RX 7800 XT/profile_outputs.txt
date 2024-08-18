@@ -1,0 +1,20 @@
+3D Collapse Benchmark Result
+──────────────────────────────────────────────
+       Operation Name   Time (ms)   Percentage
+──────────────────────────────────────────────
+    reset grid status        0.08        0.52%
+reset particle status        6.63       43.18%
+                  P2G        2.37       15.46%
+       solver on grid        0.07        0.45%
+     double mapping 1        1.15        7.46%
+     double mapping 2        1.08        7.03%
+     double mapping 3        0.07        0.43%
+                  G2P        1.68       10.91%
+        elastic model        0.32        2.11%
+   hyperelastic model        0.31        2.03%
+ drucker prager model        1.08        7.01%
+   mohr coulomb model        0.32        2.10%
+        volume lock 1        0.09        0.55%
+        volume lock 2        0.11        0.74%
+──────────────────────────────────────────────
+Total Time: 15.36 ms

@@ -1,0 +1,7 @@
+CUDA自带内存拷贝0.17s
+julia调用CUDA自带拷贝0.17s
+
+CUDA核函数拷贝0.1874s
+julia核函数拷贝0.187s
+
+MPI自带函数0.17s

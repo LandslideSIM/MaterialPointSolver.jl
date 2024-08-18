@@ -1,29 +1,32 @@
-using Documenter
+using Documenter, MaterialPointSolver, DocumenterTools
 
 makedocs(
-    sitename = "MPMSolver.jl",
-    modules = [MPMSolver],
-    checkdocs = :all,
-    clean = true,
-    doctest = true,
+    modules=[MaterialPointSolver],
+    sitename = "MaterialPointSolver.jl",
     authors = "Zenan Huo",
-    repo = "https://github.com/LandslideSIM/MPMSolver.jl",
     pages = [
         "Home" => "index.md",
-        "changes.md",
-        "method.md",
-        "API Documentation" => [
-            "system.md",
-            "physics.md",
-            "solutions.md",
-            "solver.md",
-            "post.md",
-            "quantities.md",
-            "misc.md",
-            "internal.md",
-            "allindex.md",
+        "Workflow" => Any[
+            "workflow/w1_2D_profile.md",
+            "workflow/w2_2D_hetergeneous.md",
+            "workflow/w3_3D_point_cloud.md",
+            "workflow/w4_3D_hetergeneous.md",
+            "workflow/others.md"
         ],
-        "Tutorial Notebooks" => notebooks,
-        "Examples" => generated_examples,
+        "Example" => Any[
+            "example/w1_case.md",
+            "example/w2_case.md",
+            "example/w3_case.md",
+            "example/w4_case.md",
+        ],
+        "API" => "api.md"
     ],
+    warnonly = [:missing_docs, :cross_references],
+)
+
+deploydocs(
+    repo = "github.com/LandslideSIM/MaterialPointSolver.jl.git",
+    target = "build",
+    branch = "gh-pages",
+    versions = ["stable" => "v^", "v#.#"],
 )

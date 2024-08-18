@@ -1,0 +1,8 @@
+[deps]
+MaterialPointSolver = "dc4aa359-7d89-437d-91bb-f4b330c522c1"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
+
+[compat]
+Documenter = "1.2"
+DocumenterTools = "0.1"
