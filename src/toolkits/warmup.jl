@@ -12,13 +12,24 @@
 export warmup
 
 """
-    warmup(devicetype::Symbol; ID=0)
+    warmup(Val{:CPU}; ID=0)
 
 Description:
 ---
 The minimal example of executing core functionality is used to reduce the first-time running
-time. `devicetype` can be one of `:CPU`, `:CUDA`, or `:ROCm`. Note that on the GPU from AMD,
-the device id start from `1`.`
+time. `devicetype` can be one of `:CPU`, `:CUDA`, or `:ROCm` (more backends will be support
+in the future).
+
+Examples:
+---
+
+`warmup(Val(:CPU))` 
+
+or 
+
+`warmup(Val(:CUDA), ID=0)`.
+
+> Note that on the GPU from AMD, the device id start from `1`.
 """
 function warmup(::Val{:CPU}; ID::Int=0)
     rtsdir = joinpath(homedir(), "MaterialPointSolverTEMP_$(ID)/")
