@@ -39,7 +39,7 @@ If you use MaterialPointSolver.jl in your research, please consider to cite this
 
 This project is sponserd by [Risk Group | Université de Lausanne](https://wp.unil.ch/risk/) and [China Scholarship Council [中国国家留学基金管理委员会]](https://www.csc.edu.cn/).
 
-## MPM ➕ Julia ⭐
+## MPM ➕ Julia
 
 * [package: Tesserae.jl](https://github.com/KeitaNakamura/Tesserae.jl) is a MPM-related Julia package, it provides some useful functions can be used for MPM, such as convenient macros for transferring data between grids and particles.
 
