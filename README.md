@@ -1,4 +1,4 @@
-# MaterialPointSolver <img src="docs/src/assets/logo.png" align="right" height="126" />
+# MaterialPointSolver <img src="docs/logo.png" align="right" height="126" />
 
 [![CI](https://github.com/LandslideSIM/MaterialPointSolver.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/LandslideSIM/MaterialPointSolver.jl/actions/workflows/ci.yml) 
 [![](https://img.shields.io/badge/docs-stable-blue.svg?logo=quicklook)](https://github.com/LandslideSIM/MaterialPointSolver.jl/wiki)
@@ -39,9 +39,9 @@ If you use MaterialPointSolver.jl in your research, please consider to cite this
 
 This project is sponserd by [Risk Group | Université de Lausanne](https://wp.unil.ch/risk/) and [China Scholarship Council [中国国家留学基金管理委员会]](https://www.csc.edu.cn/).
 
-## Other MPM code in Julia ⭐
+## MPM ➕ Julia ⭐
 
-* [Tesserae.jl](https://github.com/KeitaNakamura/Tesserae.jl) is a MPM-related Julia package, it provides some useful functions can be used for MPM, such as convenient macros for transferring data between grids and particles.
+* [package: Tesserae.jl](https://github.com/KeitaNakamura/Tesserae.jl) is a MPM-related Julia package, it provides some useful functions can be used for MPM, such as convenient macros for transferring data between grids and particles.
 
 * [code: MPM-Julia](https://github.com/vinhphunguyen/MPM-Julia) is the code for paper: Sinai, V.P. Nguyen, C.T. Nguyen and S. Bordas. Programming the Material Point Method in Julia. Advances in Engineering Software,105: 17--29, 2017.
 

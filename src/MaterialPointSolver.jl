@@ -17,7 +17,7 @@ import KernelAbstractions.synchronize as KAsync
 import KernelAbstractions.Extras.LoopInfo.@unroll as @KAunroll
 import Suppressor: @suppress
 
-const assets_dir = joinpath(@__DIR__, "../docs/src/assets")
+const assets_dir = joinpath(@__DIR__, "../docs/assets")
 const fontcmu    = joinpath(assets_dir, "fonts/cmu.ttf")
 const fonttnr    = joinpath(assets_dir, "fonts/tnr.ttf")
 
@@ -41,12 +41,13 @@ include(joinpath(@__DIR__, "solver.jl"  ))
 
 function print_welcome_message()
     print("\e[1;1H\e[2J")
-    @info"""\e[1;31mA high-performance MPM solver in Julia\e[0
+    @info"""\e[1;31mA high-performance MPM solver in Julia 🚀\e[0
     version    : v0.2.0
     affiliation: Risk Group, UNIL-ISTE
-    \e[1;33m⚠\e[0m \e[0;33mplease try to warm up before simulating:\e[0m
-    \e[1;33mhelp?>\e[0m warmup
     """
+    println()
+    println("\e[1;33m⚠\e[0m \e[0;33mplease try to warm up before simulating:\e[0m\n
+\e[1;33mhelp?>\e[0m warmup")
     println()
 end
 
