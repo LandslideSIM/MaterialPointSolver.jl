@@ -17,9 +17,16 @@ import KernelAbstractions.synchronize as KAsync
 import KernelAbstractions.Extras.LoopInfo.@unroll as @KAunroll
 import Suppressor: @suppress
 
-const assets_dir = joinpath(@__DIR__, "../docs/assets")
-const fontcmu    = joinpath(assets_dir, "fonts/cmu.ttf")
-const fonttnr    = joinpath(assets_dir, "fonts/tnr.ttf")
+const assets_dir = joinpath(@__DIR__  , "../docs/assets" )
+const cmu        = joinpath(assets_dir, "fonts/cmu.ttf"  )
+const cmui       = joinpath(assets_dir, "fonts/cmui.ttf" )
+const cmub       = joinpath(assets_dir, "fonts/cmub.ttf" )
+const cmuib      = joinpath(assets_dir, "fonts/cmuib.ttf")
+const tnr        = joinpath(assets_dir, "fonts/tnr.ttf"  )
+const tnri       = joinpath(assets_dir, "fonts/tnri.ttf" )
+const tnrb       = joinpath(assets_dir, "fonts/tnrb.ttf" )
+const tnrib      = joinpath(assets_dir, "fonts/tnrib.ttf")
+
 
 # export functions
 export materialpointsolver!
