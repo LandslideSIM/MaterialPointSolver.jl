@@ -1,16 +1,27 @@
 using MaterialPointSolver
 using Test
+using JSON3
 
-@testset "structs test" begin
-    
+@testset "CPU device tests" begin
+    @test 
+end
+
+@testset "NVIDIA GPU device tests" begin
     @test 1==1
 end
 
-@testset "computing test" begin
-    
+@testset "AMD GPU device test" begin
     @test 1==1
 end
 
-@testset "helper function test" begin
+@testset "Apple GPU device test" begin
+    @test 1==1
+end
+
+@testset "Intel GPU device test" begin
+    @test 1==1
+end
+
+@testset "other functions" begin
     @test 1==1
 end
