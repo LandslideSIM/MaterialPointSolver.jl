@@ -46,22 +46,6 @@ include(joinpath(@__DIR__, "type.jl"    ))
 include(joinpath(@__DIR__, "toolkit.jl" ))
 include(joinpath(@__DIR__, "solver.jl"  ))
 
-function print_welcome_message()
-    print("\e[1;1H\e[2J")
-    @info"""\e[1;31mA high-performance MPM solver in Julia 🚀\e[0
-    version    : v0.2.0
-    affiliation: Risk Group, UNIL-ISTE
-    """
-    println()
-    println("\e[1;33m⚠\e[0m \e[0;33mplease try to warm up before simulating:\e[0m\n
-\e[1;33mhelp?>\e[0m warmup")
-    println()
-end
-
-function __init__()
-    print_welcome_message()
-end
-
 """
     materialpointsolver!(args::MODELARGS, grid::GRID, mp::PARTICLE, pts_attr::PROPERTY, 
         bc::BOUNDARY; workflow::Function=procedure!)
