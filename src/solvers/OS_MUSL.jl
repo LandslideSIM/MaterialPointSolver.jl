@@ -30,7 +30,7 @@ function procedure!(args    ::MODELARGS,
     doublemapping1_OS!(dev)(ndrange=mp.num, grid, mp, pts_attr, ΔT, args.FLIP, args.PIC)
     doublemapping2_OS!(dev)(ndrange=mp.num, grid, mp)
     doublemapping3_OS!(dev)(ndrange=grid.node_num, grid, bc, ΔT)
-    G2P_OS!(dev)(ndrange=mp.num, grid, mp)
+    G2P_OS!(dev)(ndrange=mp.num, grid, mp, ΔT)
     if args.constitutive==:hyperelastic
         hyE!(dev)(ndrange=mp.num, mp, pts_attr)
     elseif args.constitutive==:linearelastic

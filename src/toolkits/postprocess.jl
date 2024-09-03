@@ -26,15 +26,16 @@ Generates the final geometry and properties in `.vtu` format (2D).
     VTU_cls = [MeshCell(VTKCellTypes.VTK_VERTEX, [i]) for i in 1:mp.num]
     VTU_pts = Array{Float64}(mp.pos')
     vtk_grid(mps_path, VTU_pts, VTU_cls) do vtk
-        vtk["stress"    ] = mp.σij[:, [1, 2, 4]]'
-        vtk["strain_s"  ] = mp.ϵij_s[:, [1, 2, 4]]'
-        vtk["epII"      ] = mp.epII
-        vtk["epK"       ] = mp.epK
-        vtk["mass"      ] = mp.Ms
-        vtk["layer"     ] = pts_attr.layer
-        vtk["vol"       ] = mp.vol
-        vtk["velocity_s"] = mp.Vs'
-        vtk["disp"      ] = abs.(mp.pos .- mp.init)'
+        vtk["stress"     ] = mp.σij[:, [1, 2, 4]]'
+        vtk["strain_s"   ] = mp.ϵij_s[:, [1, 2, 4]]'
+        vtk["epII"       ] = mp.epII
+        vtk["strain_rate"] = mp.dϵ
+        vtk["epK"        ] = mp.epK
+        vtk["mass"       ] = mp.Ms
+        vtk["layer"      ] = pts_attr.layer
+        vtk["vol"        ] = mp.vol
+        vtk["velocity_s" ] = mp.Vs'
+        vtk["disp"       ] = abs.(mp.pos .- mp.init)'
         args.coupling==:TS ? (
             vtk["strain_w"     ] = mp.ϵij_w[:, [1, 2, 4]]';
             vtk["pore_pressure"] = mp.σw                  ;
@@ -64,15 +65,16 @@ Generates the final geometry and properties in `.vtu` format (3D).
     VTU_cls = [MeshCell(VTKCellTypes.VTK_VERTEX, [i]) for i in 1:mp.num]
     VTU_pts = Array{Float64}(mp.pos')
     vtk_grid(mps_path, VTU_pts, VTU_cls) do vtk
-        vtk["stress"    ] = mp.σij'
-        vtk["strain_s"  ] = mp.ϵij_s'
-        vtk["epII"      ] = mp.epII
-        vtk["epK"       ] = mp.epK
-        vtk["mass"      ] = mp.Ms
-        vtk["layer"     ] = pts_attr.layer
-        vtk["vol"       ] = mp.vol
-        vtk["velocity_s"] = mp.Vs'
-        vtk["disp"      ] = abs.(mp.pos .- mp.init)'
+        vtk["stress"     ] = mp.σij'
+        vtk["strain_s"   ] = mp.ϵij_s'
+        vtk["epII"       ] = mp.epII
+        vtk["strain_rate"] = mp.dϵ
+        vtk["epK"        ] = mp.epK
+        vtk["mass"       ] = mp.Ms
+        vtk["layer"      ] = pts_attr.layer
+        vtk["vol"        ] = mp.vol
+        vtk["velocity_s" ] = mp.Vs'
+        vtk["disp"       ] = abs.(mp.pos .- mp.init)'
         args.coupling==:TS ? (
             vtk["strain_w"     ] = mp.ϵij_w'  ;
             vtk["pore_pressure"] = mp.σw      ;
@@ -115,15 +117,16 @@ Generates animation by using the data from HDF5 file (2D).
     paraview_collection(mps_path) do pvd
         @inbounds Threads.@threads for i in 1:itr
             # read data from HDF5 file
-            time   = fid["group$(i)/time"  ] |> read
-            sig    = fid["group$(i)/sig"   ] |> read
-            eps_s  = fid["group$(i)/eps_s" ] |> read
-            epII   = fid["group$(i)/epII"  ] |> read
-            epK    = fid["group$(i)/epK"   ] |> read
-            v_s    = fid["group$(i)/v_s"   ] |> read
-            mass   = fid["group$(i)/mass"  ] |> read
-            vol    = fid["group$(i)/vol"   ] |> read
-            mp_pos = fid["group$(i)/mp_pos"] |> read
+            time   = fid["group$(i)/time"       ] |> read
+            sig    = fid["group$(i)/sig"        ] |> read
+            eps_s  = fid["group$(i)/eps_s"      ] |> read
+            epII   = fid["group$(i)/epII"       ] |> read
+            epK    = fid["group$(i)/epK"        ] |> read
+            dϵ     = fid["group$(i)/strain_rate"] |> read
+            v_s    = fid["group$(i)/v_s"        ] |> read
+            mass   = fid["group$(i)/mass"       ] |> read
+            vol    = fid["group$(i)/vol"        ] |> read
+            mp_pos = fid["group$(i)/mp_pos"     ] |> read
             args.coupling==:TS ? (
                 pp       = fid["group$(i)/pp"      ] |> read;
                 eps_w    = fid["group$(i)/eps_w"   ] |> read;
@@ -134,15 +137,16 @@ Generates animation by using the data from HDF5 file (2D).
             VTU_cls = [MeshCell(VTKCellTypes.VTK_VERTEX, [i]) for i in 1:size(mp_init, 1)]
             VTU_pts = Array{Float64}(mp_pos')
             let vtk = vtk_grid(joinpath(anim_path, "iter_$(i)"), VTU_pts, VTU_cls)
-                vtk["stress"    ] = sig[:, [1, 2, 4]]'
-                vtk["strain_s"  ] = eps_s[:, [1, 2, 4]]'
-                vtk["epII"      ] = epII
-                vtk["epK"       ] = epK
-                vtk["mass"      ] = mass
-                vtk["vol"       ] = vol
-                vtk["velocity_s"] = v_s'
-                vtk["layer"     ] = layer
-                vtk["disp"      ] = abs.(mp_pos .- mp_init)'
+                vtk["stress"     ] = sig[:, [1, 2, 4]]'
+                vtk["strain_s"   ] = eps_s[:, [1, 2, 4]]'
+                vtk["epII"       ] = epII
+                vtk["strain_rate"] = dϵ
+                vtk["epK"        ] = epK
+                vtk["mass"       ] = mass
+                vtk["vol"        ] = vol
+                vtk["velocity_s" ] = v_s'
+                vtk["layer"      ] = layer
+                vtk["disp"       ] = abs.(mp_pos .- mp_init)'
                 args.coupling==:TS ? (
                     vtk["strain_w"     ] = eps_w[:, [1, 2, 4]]';
                     vtk["pore_pressure"] = pp                  ;
@@ -189,15 +193,16 @@ Generates animation by using the data from HDF5 file (3D).
     paraview_collection(mps_path) do pvd
         @inbounds Threads.@threads for i in 1:itr
             # read data from HDF5 file
-            time   = fid["group$(i)/time"  ] |> read
-            sig    = fid["group$(i)/sig"   ] |> read
-            eps_s  = fid["group$(i)/eps_s" ] |> read
-            epII   = fid["group$(i)/epII"  ] |> read
-            epK    = fid["group$(i)/epK"   ] |> read
-            v_s    = fid["group$(i)/v_s"   ] |> read
-            mass   = fid["group$(i)/mass"  ] |> read
-            vol    = fid["group$(i)/vol"   ] |> read
-            mp_pos = fid["group$(i)/mp_pos"] |> read
+            time   = fid["group$(i)/time"       ] |> read
+            sig    = fid["group$(i)/sig"        ] |> read
+            eps_s  = fid["group$(i)/eps_s"      ] |> read
+            epII   = fid["group$(i)/epII"       ] |> read
+            epK    = fid["group$(i)/epK"        ] |> read
+            dϵ     = fid["group$(i)/strain_rate"] |> read
+            v_s    = fid["group$(i)/v_s"        ] |> read
+            mass   = fid["group$(i)/mass"       ] |> read
+            vol    = fid["group$(i)/vol"        ] |> read
+            mp_pos = fid["group$(i)/mp_pos"     ] |> read
             args.coupling==:TS ? (
                 pp       = fid["group$(i)/pp"      ] |> read;
                 eps_w    = fid["group$(i)/eps_w"   ] |> read;
@@ -208,15 +213,16 @@ Generates animation by using the data from HDF5 file (3D).
             VTU_cls = [MeshCell(VTKCellTypes.VTK_VERTEX, [i]) for i in 1:mp_num]
             VTU_pts = Array{Float64}(mp_pos')
             let vtk = vtk_grid(joinpath(anim_path, "iteration_$(i)"), VTU_pts, VTU_cls)
-                vtk["stress"    ] = sig'
-                vtk["strain_s"  ] = eps_s'
-                vtk["epII"      ] = epII
-                vtk["epK"       ] = epK
-                vtk["mass"      ] = mass
-                vtk["vol"       ] = vol
-                vtk["velocity_s"] = v_s'
-                vtk["layer"     ] = layer
-                vtk["disp"      ] = abs.(mp_pos .- mp_init)'
+                vtk["stress"     ] = sig'
+                vtk["strain_s"   ] = eps_s'
+                vtk["epII"       ] = epII
+                vtk["epK"        ] = epK
+                vtk["strain_rate"] = dϵ
+                vtk["mass"       ] = mass
+                vtk["vol"        ] = vol
+                vtk["velocity_s" ] = v_s'
+                vtk["layer"      ] = layer
+                vtk["disp"       ] = abs.(mp_pos .- mp_init)'
                 args.coupling==:TS ? (
                     vtk["strain_w"     ] = eps_w'  ;
                     vtk["pore_pressure"] = pp      ;

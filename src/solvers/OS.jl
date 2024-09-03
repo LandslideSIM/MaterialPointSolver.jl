@@ -457,7 +457,8 @@ Description:
         grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
         grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
         # damping force for solid
-        dampvs = -ζs * sqrt(grid.Fs[ix, 1]^T1(2) + grid.Fs[ix, 2]^T1(2))
+        dampvs = -ζs * sqrt(grid.Fs[ix, 1] * grid.Fs[ix, 1] + 
+                            grid.Fs[ix, 2] * grid.Fs[ix, 2])
         # compute nodal total force for mixture
         Fs_x = grid.Fs[ix, 1] + dampvs * sign(grid.Vs[ix, 1])
         Fs_y = grid.Fs[ix, 2] + dampvs * sign(grid.Vs[ix, 2])
@@ -498,9 +499,9 @@ Description:
         grid.Vs[ix, 2] = Ps_2 * Ms_denom
         grid.Vs[ix, 3] = Ps_3 * Ms_denom
         # damping force for solid
-        dampvs = -ζs * sqrt(grid.Fs[ix, 1]^T1(2) +
-                            grid.Fs[ix, 2]^T1(2) +
-                            grid.Fs[ix, 3]^T1(2))
+        dampvs = -ζs * sqrt(grid.Fs[ix, 1] * grid.Fs[ix, 1] +
+                            grid.Fs[ix, 2] * grid.Fs[ix, 2] +
+                            grid.Fs[ix, 3] * grid.Fs[ix, 3])
         # compute nodal total force for mixture
         Fs_x = grid.Fs[ix, 1] + dampvs * sign(grid.Vs[ix, 1])
         Fs_y = grid.Fs[ix, 2] + dampvs * sign(grid.Vs[ix, 2])
@@ -551,29 +552,29 @@ Description:
             Ni = mp.Ni[ix, iy]
             if Ni != T2(0.0)
                 p2n = mp.p2n[ix, iy]
-                tmp_pos_x += Ni* grid.Vs_T[p2n, 1]
-                tmp_pos_y += Ni* grid.Vs_T[p2n, 2]
-                tmp_vx_s1 += Ni*(grid.Vs_T[p2n, 1]-grid.Vs[p2n, 1])
-                tmp_vx_s2 += Ni* grid.Vs_T[p2n, 1]
-                tmp_vy_s1 += Ni*(grid.Vs_T[p2n, 2]-grid.Vs[p2n, 2])
-                tmp_vy_s2 += Ni* grid.Vs_T[p2n, 2]
+                tmp_pos_x += Ni *  grid.Vs_T[p2n, 1]
+                tmp_pos_y += Ni *  grid.Vs_T[p2n, 2]
+                tmp_vx_s1 += Ni * (grid.Vs_T[p2n, 1] - grid.Vs[p2n, 1])
+                tmp_vx_s2 += Ni *  grid.Vs_T[p2n, 1]
+                tmp_vy_s1 += Ni * (grid.Vs_T[p2n, 2] - grid.Vs[p2n, 2])
+                tmp_vy_s2 += Ni *  grid.Vs_T[p2n, 2]
             end
         end
-        mp.pos[ix, 1] += ΔT*tmp_pos_x
-        mp.pos[ix, 2] += ΔT*tmp_pos_y
+        mp.pos[ix, 1] += ΔT * tmp_pos_x
+        mp.pos[ix, 2] += ΔT * tmp_pos_y
         # update particle velocity
-        mp.Vs[ix, 1] = FLIP*(mp.Vs[ix, 1]+tmp_vx_s1)+PIC*tmp_vx_s2
-        mp.Vs[ix, 2] = FLIP*(mp.Vs[ix, 2]+tmp_vy_s1)+PIC*tmp_vy_s2
+        mp.Vs[ix, 1] = FLIP * (mp.Vs[ix, 1] + tmp_vx_s1) + PIC * tmp_vx_s2
+        mp.Vs[ix, 2] = FLIP * (mp.Vs[ix, 2] + tmp_vy_s1) + PIC * tmp_vy_s2
         # update particle momentum
         Vs_1 = mp.Vs[ix, 1]
         Vs_2 = mp.Vs[ix, 2]
         Ms   = mp.Ms[ix]
-        mp.Ps[ix, 1] = Ms*Vs_1
-        mp.Ps[ix, 2] = Ms*Vs_2
+        mp.Ps[ix, 1] = Ms * Vs_1
+        mp.Ps[ix, 2] = Ms * Vs_2
         # update CFL conditions
-        sqr = sqrt((Ks+G*T2(1.333333))/mp.ρs[ix]) # 4/3 ≈ 1.333333
-        cd_sx = grid.space_x/(sqr+abs(Vs_1))
-        cd_sy = grid.space_y/(sqr+abs(Vs_2))
+        sqr = sqrt((Ks + G * T2(1.333333)) / mp.ρs[ix]) # 4/3 ≈ 1.333333
+        cd_sx = grid.space_x / (sqr + abs(Vs_1))
+        cd_sy = grid.space_y / (sqr + abs(Vs_2))
         mp.cfl[ix] = min(cd_sx, cd_sy)
     end
 end
@@ -612,38 +613,38 @@ Description:
                 Vs_T1 = grid.Vs_T[p2n, 1]
                 Vs_T2 = grid.Vs_T[p2n, 2]
                 Vs_T3 = grid.Vs_T[p2n, 3]
-                tmp_pos_x += Ni* Vs_T1
-                tmp_pos_y += Ni* Vs_T2
-                tmp_pos_z += Ni* Vs_T3
-                tmp_vx_s1 += Ni*(Vs_T1-grid.Vs[p2n, 1])
-                tmp_vx_s2 += Ni* Vs_T1
-                tmp_vy_s1 += Ni*(Vs_T2-grid.Vs[p2n, 2])
-                tmp_vy_s2 += Ni* Vs_T2
-                tmp_vz_s1 += Ni*(Vs_T3-grid.Vs[p2n, 3])
-                tmp_vz_s2 += Ni* Vs_T3
+                tmp_pos_x += Ni *  Vs_T1
+                tmp_pos_y += Ni *  Vs_T2
+                tmp_pos_z += Ni *  Vs_T3
+                tmp_vx_s1 += Ni * (Vs_T1 - grid.Vs[p2n, 1])
+                tmp_vx_s2 += Ni *  Vs_T1
+                tmp_vy_s1 += Ni * (Vs_T2 - grid.Vs[p2n, 2])
+                tmp_vy_s2 += Ni *  Vs_T2
+                tmp_vz_s1 += Ni * (Vs_T3 - grid.Vs[p2n, 3])
+                tmp_vz_s2 += Ni *  Vs_T3
             end
         end
         # update particle position
-        mp.pos[ix, 1] += ΔT*tmp_pos_x
-        mp.pos[ix, 2] += ΔT*tmp_pos_y
-        mp.pos[ix, 3] += ΔT*tmp_pos_z
+        mp.pos[ix, 1] += ΔT * tmp_pos_x
+        mp.pos[ix, 2] += ΔT * tmp_pos_y
+        mp.pos[ix, 3] += ΔT * tmp_pos_z
         # update particle velocity
-        mp.Vs[ix, 1] = FLIP*(mp.Vs[ix, 1]+tmp_vx_s1)+PIC*tmp_vx_s2
-        mp.Vs[ix, 2] = FLIP*(mp.Vs[ix, 2]+tmp_vy_s1)+PIC*tmp_vy_s2
-        mp.Vs[ix, 3] = FLIP*(mp.Vs[ix, 3]+tmp_vz_s1)+PIC*tmp_vz_s2
+        mp.Vs[ix, 1] = FLIP * (mp.Vs[ix, 1] + tmp_vx_s1) + PIC * tmp_vx_s2
+        mp.Vs[ix, 2] = FLIP * (mp.Vs[ix, 2] + tmp_vy_s1) + PIC * tmp_vy_s2
+        mp.Vs[ix, 3] = FLIP * (mp.Vs[ix, 3] + tmp_vz_s1) + PIC * tmp_vz_s2
         # update particle momentum
         Vs_1 = mp.Vs[ix, 1]
         Vs_2 = mp.Vs[ix, 2]
         Vs_3 = mp.Vs[ix, 3]
         Ms   = mp.Ms[ix]
-        mp.Ps[ix, 1] = Ms*Vs_1
-        mp.Ps[ix, 2] = Ms*Vs_2
-        mp.Ps[ix, 3] = Ms*Vs_3
+        mp.Ps[ix, 1] = Ms * Vs_1
+        mp.Ps[ix, 2] = Ms * Vs_2
+        mp.Ps[ix, 3] = Ms * Vs_3
         # update CFL conditions
-        sqr = sqrt((Ks+G*T2(1.333333))/mp.ρs[ix])
-        cd_sx = grid.space_x/(sqr+abs(Vs_1))
-        cd_sy = grid.space_y/(sqr+abs(Vs_2))
-        cd_sz = grid.space_z/(sqr+abs(Vs_3))
+        sqr = sqrt((Ks + G * T2(1.333333)) / mp.ρs[ix])
+        cd_sx = grid.space_x / (sqr + abs(Vs_1))
+        cd_sy = grid.space_y / (sqr + abs(Vs_2))
+        cd_sz = grid.space_z / (sqr + abs(Vs_3))
         mp.cfl[ix] = min(cd_sx, cd_sy, cd_sz)
     end
 end
@@ -660,14 +661,14 @@ Scatter momentum from particles to grid.
     mp  ::KernelParticle2D{T1, T2}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= mp.num
+    if ix ≤ mp.num
         # update particle position & velocity
         for iy in Int32(1):Int32(mp.NIC)
             Ni = mp.Ni[ix, iy]
             if Ni != T2(0.0)
                 p2n = mp.p2n[ix, iy]
-                @KAatomic grid.Ps[p2n, 1] += mp.Ps[ix, 1]*Ni
-                @KAatomic grid.Ps[p2n, 2] += mp.Ps[ix, 2]*Ni
+                @KAatomic grid.Ps[p2n, 1] += mp.Ps[ix, 1] * Ni
+                @KAatomic grid.Ps[p2n, 2] += mp.Ps[ix, 2] * Ni
             end
         end
     end
@@ -691,9 +692,9 @@ Scatter momentum from particles to grid.
             Ni = mp.Ni[ix, iy]
             if Ni != T2(0.0)
                 p2n = mp.p2n[ix, iy]
-                @KAatomic grid.Ps[p2n, 1] += mp.Ps[ix, 1]*Ni
-                @KAatomic grid.Ps[p2n, 2] += mp.Ps[ix, 2]*Ni
-                @KAatomic grid.Ps[p2n, 3] += mp.Ps[ix, 3]*Ni
+                @KAatomic grid.Ps[p2n, 1] += mp.Ps[ix, 1] * Ni
+                @KAatomic grid.Ps[p2n, 2] += mp.Ps[ix, 2] * Ni
+                @KAatomic grid.Ps[p2n, 3] += mp.Ps[ix, 3] * Ni
             end
         end
     end
@@ -715,14 +716,14 @@ Solve equations on grid.
     if ix <= grid.node_num && grid.Ms[ix] != Int32(0)
         Ms_denom = T2(1.0) / grid.Ms[ix]
         # compute nodal velocities
-        grid.Vs[ix, 1] = grid.Ps[ix, 1]*Ms_denom
-        grid.Vs[ix, 2] = grid.Ps[ix, 2]*Ms_denom
+        grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
+        grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
         # fixed Dirichlet nodes
-        bc.Vx_s_Idx[ix] == T1(1) ? grid.Vs[ix, 1]=bc.Vx_s_Val[ix] : nothing
-        bc.Vy_s_Idx[ix] == T1(1) ? grid.Vs[ix, 2]=bc.Vy_s_Val[ix] : nothing
+        bc.Vx_s_Idx[ix] == T1(1) ? grid.Vs[ix, 1] = bc.Vx_s_Val[ix] : nothing
+        bc.Vy_s_Idx[ix] == T1(1) ? grid.Vs[ix, 2] = bc.Vy_s_Val[ix] : nothing
         # compute nodal displacement
-        grid.Δd_s[ix, 1] = grid.Vs[ix, 1]*ΔT
-        grid.Δd_s[ix, 2] = grid.Vs[ix, 2]*ΔT
+        grid.Δd_s[ix, 1] = grid.Vs[ix, 1] * ΔT
+        grid.Δd_s[ix, 2] = grid.Vs[ix, 2] * ΔT
     end
 end
 
@@ -742,17 +743,17 @@ Solve equations on grid.
     if ix <= grid.node_num && grid.Ms[ix] != Int32(0)
         Ms_denom = T2(1.0) / grid.Ms[ix]
         # compute nodal velocities
-        grid.Vs[ix, 1] = grid.Ps[ix, 1]*Ms_denom
-        grid.Vs[ix, 2] = grid.Ps[ix, 2]*Ms_denom
-        grid.Vs[ix, 3] = grid.Ps[ix, 3]*Ms_denom
+        grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
+        grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
+        grid.Vs[ix, 3] = grid.Ps[ix, 3] * Ms_denom
         # fixed Dirichlet nodes
-        bc.Vx_s_Idx[ix]==T1(1) ? grid.Vs[ix, 1]=bc.Vx_s_Val[ix] : nothing
-        bc.Vy_s_Idx[ix]==T1(1) ? grid.Vs[ix, 2]=bc.Vy_s_Val[ix] : nothing
-        bc.Vz_s_Idx[ix]==T1(1) ? grid.Vs[ix, 3]=bc.Vz_s_Val[ix] : nothing
+        bc.Vx_s_Idx[ix] == T1(1) ? grid.Vs[ix, 1] = bc.Vx_s_Val[ix] : nothing
+        bc.Vy_s_Idx[ix] == T1(1) ? grid.Vs[ix, 2] = bc.Vy_s_Val[ix] : nothing
+        bc.Vz_s_Idx[ix] == T1(1) ? grid.Vs[ix, 3] = bc.Vz_s_Val[ix] : nothing
         # compute nodal displacement
-        grid.Δd_s[ix, 1] = grid.Vs[ix, 1]*ΔT
-        grid.Δd_s[ix, 2] = grid.Vs[ix, 2]*ΔT
-        grid.Δd_s[ix, 3] = grid.Vs[ix, 3]*ΔT
+        grid.Δd_s[ix, 1] = grid.Vs[ix, 1] * ΔT
+        grid.Δd_s[ix, 2] = grid.Vs[ix, 2] * ΔT
+        grid.Δd_s[ix, 3] = grid.Vs[ix, 3] * ΔT
     end
 end
 
@@ -765,10 +766,12 @@ Update particle information.
 """
 @kernel inbounds=true function G2P_OS!(
     grid::    KernelGrid2D{T1, T2},
-    mp  ::KernelParticle2D{T1, T2}
+    mp  ::KernelParticle2D{T1, T2},
+    ΔT  ::T2
 ) where {T1, T2}
     ix = @index(Global)
     if ix <= mp.num
+        ΔT_1 = T2(1.0) / ΔT
         dF1 = dF2 = dF3 = dF4 = T2(0.0)
         for iy in Int32(1):Int32(mp.NIC)
             if mp.Ni[ix, iy] != T2(0.0)
@@ -776,34 +779,39 @@ Update particle information.
                 ∂Nx = mp.∂Nx[ix, iy]
                 ∂Ny = mp.∂Ny[ix, iy]
                 # compute solid incremental deformation gradient
-                dF1 += grid.Δd_s[p2n, 1]*∂Nx
-                dF2 += grid.Δd_s[p2n, 1]*∂Ny
-                dF3 += grid.Δd_s[p2n, 2]*∂Nx
-                dF4 += grid.Δd_s[p2n, 2]*∂Ny
+                dF1 += grid.Δd_s[p2n, 1] * ∂Nx
+                dF2 += grid.Δd_s[p2n, 1] * ∂Ny
+                dF3 += grid.Δd_s[p2n, 2] * ∂Nx
+                dF4 += grid.Δd_s[p2n, 2] * ∂Ny
             end
         end
         mp.ΔFs[ix, 1] = dF1
         mp.ΔFs[ix, 2] = dF2
         mp.ΔFs[ix, 3] = dF3
         mp.ΔFs[ix, 4] = dF4
+        # strain rate (Second Invariant of Strain Rate Tensor)
+        dϵxx = dF1 * ΔT_1
+        dϵyy = dF4 * ΔT_1
+        dϵxy = T2(0.5) * (dF2 + dF3) * ΔT_1
+        mp.dϵ[ix] = sqrt(dϵxx * dϵxx + dϵyy * dϵyy + T2(2.0) * dϵxy * dϵxy)
         # compute strain increment 
         mp.Δϵij_s[ix, 1] = dF1
         mp.Δϵij_s[ix, 2] = dF4
-        mp.Δϵij_s[ix, 4] = dF2+dF3
+        mp.Δϵij_s[ix, 4] = dF2 + dF3
         # update strain tensor
         mp.ϵij_s[ix, 1] += dF1
         mp.ϵij_s[ix, 2] += dF4
-        mp.ϵij_s[ix, 4] += dF2+dF3
+        mp.ϵij_s[ix, 4] += dF2 + dF3
         # deformation gradient matrix
         F1 = mp.F[ix, 1]; F2 = mp.F[ix, 2]; F3 = mp.F[ix, 3]; F4 = mp.F[ix, 4]      
-        mp.F[ix, 1] = (dF1+T2(1.0))*F1+dF2*F3
-        mp.F[ix, 2] = (dF1+T2(1.0))*F2+dF2*F4
-        mp.F[ix, 3] = (dF4+T2(1.0))*F3+dF3*F1
-        mp.F[ix, 4] = (dF4+T2(1.0))*F4+dF3*F2
+        mp.F[ix, 1] = (dF1 + T2(1.0)) * F1 + dF2 * F3
+        mp.F[ix, 2] = (dF1 + T2(1.0)) * F2 + dF2 * F4
+        mp.F[ix, 3] = (dF4 + T2(1.0)) * F3 + dF3 * F1
+        mp.F[ix, 4] = (dF4 + T2(1.0)) * F4 + dF3 * F2
         # update jacobian value and particle volume
-        mp.J[  ix] = mp.F[ix, 1]*mp.F[ix, 4]-mp.F[ix, 2]*mp.F[ix, 3]
-        mp.vol[ix] = mp.J[ix]*mp.vol_init[ix]
-        mp.ρs[ ix] = mp.ρs_init[ix]/mp.J[ix]
+        mp.J[ix] = mp.F[ix, 1] * mp.F[ix, 4] - mp.F[ix, 2] * mp.F[ix, 3]
+        mp.vol[ix] = mp.J[ix] * mp.vol_init[ix]
+        mp.ρs[ix] = mp.ρs_init[ix] / mp.J[ix]
     end
 end
 
@@ -816,10 +824,12 @@ Update particle information.
 """
 @kernel inbounds=true function G2P_OS!(
     grid::    KernelGrid3D{T1, T2},
-    mp  ::KernelParticle3D{T1, T2}
+    mp  ::KernelParticle3D{T1, T2},
+    ΔT  ::T2
 ) where {T1, T2}
     ix = @index(Global)
     if ix <= mp.num
+        ΔT_1 = T2(1.0) / ΔT
         dF1 = dF2 = dF3 = dF4 = dF5 = dF6 = dF7 = dF8 = dF9 = T2(0.0)
         for iy in Int32(1):Int32(mp.NIC)
             if mp.Ni[ix, iy] != T2(0.0)
@@ -828,47 +838,59 @@ Update particle information.
                 ∂Ny = mp.∂Ny[ix, iy]; ds2 = grid.Δd_s[p2n, 2]
                 ∂Nz = mp.∂Nz[ix, iy]; ds3 = grid.Δd_s[p2n, 3]
                 # compute solid incremental deformation gradient
-                dF1 += ds1*∂Nx; dF2 += ds1*∂Ny; dF3 += ds1*∂Nz
-                dF4 += ds2*∂Nx; dF5 += ds2*∂Ny; dF6 += ds2*∂Nz
-                dF7 += ds3*∂Nx; dF8 += ds3*∂Ny; dF9 += ds3*∂Nz
+                dF1 += ds1 * ∂Nx; dF2 += ds1 * ∂Ny; dF3 += ds1 * ∂Nz
+                dF4 += ds2 * ∂Nx; dF5 += ds2 * ∂Ny; dF6 += ds2 * ∂Nz
+                dF7 += ds3 * ∂Nx; dF8 += ds3 * ∂Ny; dF9 += ds3 * ∂Nz
             end
         end
         mp.ΔFs[ix, 1] = dF1; mp.ΔFs[ix, 2] = dF2; mp.ΔFs[ix, 3] = dF3
         mp.ΔFs[ix, 4] = dF4; mp.ΔFs[ix, 5] = dF5; mp.ΔFs[ix, 6] = dF6
         mp.ΔFs[ix, 7] = dF7; mp.ΔFs[ix, 8] = dF8; mp.ΔFs[ix, 9] = dF9
+        # strain rate (Second Invariant of Strain Rate Tensor)
+        dϵxx = dF1 * ΔT_1
+        dϵyy = dF5 * ΔT_1
+        dϵzz = dF9 * ΔT_1
+        dϵxy = T2(0.5) * (dF2 + dF4) * ΔT_1
+        dϵyz = T2(0.5) * (dF6 + dF8) * ΔT_1
+        dϵxz = T2(0.5) * (dF3 + dF7) * ΔT_1
+        mp.dϵ[ix] = sqrt(dϵxx * dϵxx + dϵyy * dϵyy + dϵzz * dϵzz + 
+            T2(2.0) * (dϵxy * dϵxy + dϵyz * dϵyz + dϵxz * dϵxz))
         # compute strain increment
         mp.Δϵij_s[ix, 1] = dF1
         mp.Δϵij_s[ix, 2] = dF5
         mp.Δϵij_s[ix, 3] = dF9
-        mp.Δϵij_s[ix, 4] = dF2+dF4
-        mp.Δϵij_s[ix, 5] = dF6+dF8
-        mp.Δϵij_s[ix, 6] = dF3+dF7
+        mp.Δϵij_s[ix, 4] = dF2 + dF4
+        mp.Δϵij_s[ix, 5] = dF6 + dF8
+        mp.Δϵij_s[ix, 6] = dF3 + dF7
         # update strain tensor
         mp.ϵij_s[ix, 1] += dF1
         mp.ϵij_s[ix, 2] += dF5
         mp.ϵij_s[ix, 3] += dF9
-        mp.ϵij_s[ix, 4] += dF2+dF4
-        mp.ϵij_s[ix, 5] += dF6+dF8
-        mp.ϵij_s[ix, 6] += dF3+dF7
+        mp.ϵij_s[ix, 4] += dF2 + dF4
+        mp.ϵij_s[ix, 5] += dF6 + dF8
+        mp.ϵij_s[ix, 6] += dF3 + dF7
         # deformation gradient matrix
         F1 = mp.F[ix, 1]; F2 = mp.F[ix, 2]; F3 = mp.F[ix, 3]
         F4 = mp.F[ix, 4]; F5 = mp.F[ix, 5]; F6 = mp.F[ix, 6]
         F7 = mp.F[ix, 7]; F8 = mp.F[ix, 8]; F9 = mp.F[ix, 9]        
-        mp.F[ix, 1] = (dF1+T2(1.0))*F1+dF2*F4+dF3*F7
-        mp.F[ix, 2] = (dF1+T2(1.0))*F2+dF2*F5+dF3*F8
-        mp.F[ix, 3] = (dF1+T2(1.0))*F3+dF2*F6+dF3*F9
-        mp.F[ix, 4] = (dF5+T2(1.0))*F4+dF4*F1+dF6*F7
-        mp.F[ix, 5] = (dF5+T2(1.0))*F5+dF4*F2+dF6*F8
-        mp.F[ix, 6] = (dF5+T2(1.0))*F6+dF4*F3+dF6*F9
-        mp.F[ix, 7] = (dF9+T2(1.0))*F7+dF8*F4+dF7*F1
-        mp.F[ix, 8] = (dF9+T2(1.0))*F8+dF8*F5+dF7*F2
-        mp.F[ix, 9] = (dF9+T2(1.0))*F9+dF8*F6+dF7*F3
+        mp.F[ix, 1] = (dF1 + T2(1.0)) * F1 + dF2 * F4 + dF3 * F7
+        mp.F[ix, 2] = (dF1 + T2(1.0)) * F2 + dF2 * F5 + dF3 * F8
+        mp.F[ix, 3] = (dF1 + T2(1.0)) * F3 + dF2 * F6 + dF3 * F9
+        mp.F[ix, 4] = (dF5 + T2(1.0)) * F4 + dF4 * F1 + dF6 * F7
+        mp.F[ix, 5] = (dF5 + T2(1.0)) * F5 + dF4 * F2 + dF6 * F8
+        mp.F[ix, 6] = (dF5 + T2(1.0)) * F6 + dF4 * F3 + dF6 * F9
+        mp.F[ix, 7] = (dF9 + T2(1.0)) * F7 + dF8 * F4 + dF7 * F1
+        mp.F[ix, 8] = (dF9 + T2(1.0)) * F8 + dF8 * F5 + dF7 * F2
+        mp.F[ix, 9] = (dF9 + T2(1.0)) * F9 + dF8 * F6 + dF7 * F3
         # update jacobian value and particle volume
-        mp.J[ix] = mp.F[ix, 1]*mp.F[ix, 5]*mp.F[ix, 9]+mp.F[ix, 2]*mp.F[ix, 6]*mp.F[ix, 7]+
-                   mp.F[ix, 3]*mp.F[ix, 4]*mp.F[ix, 8]-mp.F[ix, 7]*mp.F[ix, 5]*mp.F[ix, 3]-
-                   mp.F[ix, 8]*mp.F[ix, 6]*mp.F[ix, 1]-mp.F[ix, 9]*mp.F[ix, 4]*mp.F[ix, 2]
-        mp.vol[ix] = mp.J[ix]*mp.vol_init[ix]
-        mp.ρs[ ix] = mp.ρs_init[ix]/mp.J[ix]
+        mp.J[ix] = mp.F[ix, 1] * mp.F[ix, 5] * mp.F[ix, 9] + 
+                   mp.F[ix, 2] * mp.F[ix, 6] * mp.F[ix, 7] +
+                   mp.F[ix, 3] * mp.F[ix, 4] * mp.F[ix, 8] - 
+                   mp.F[ix, 7] * mp.F[ix, 5] * mp.F[ix, 3] -
+                   mp.F[ix, 8] * mp.F[ix, 6] * mp.F[ix, 1] - 
+                   mp.F[ix, 9] * mp.F[ix, 4] * mp.F[ix, 2] 
+        mp.vol[ix] = mp.J[ix] * mp.vol_init[ix]
+        mp.ρs[ix] = mp.ρs_init[ix] / mp.J[ix]
     end
 end
 
@@ -887,7 +909,7 @@ Mapping mean stress and volume from particle to grid.
     if ix <= mp.num
         p2c = mp.p2c[ix]
         vol = mp.vol[ix]
-        @KAatomic grid.σm[ p2c] += vol*mp.σm[ix]
+        @KAatomic grid.σm[ p2c] += vol * mp.σm[ix]
         @KAatomic grid.vol[p2c] += vol
     end
 end
@@ -907,7 +929,7 @@ Mapping mean stress and volume from particle to grid.
     if ix <= mp.num
         p2c = mp.p2c[ix]
         vol = mp.vol[ix]
-        @KAatomic grid.σm[ p2c] += vol*mp.σm[ix]
+        @KAatomic grid.σm[ p2c] += vol * mp.σm[ix]
         @KAatomic grid.vol[p2c] += vol
     end
 end
@@ -926,18 +948,18 @@ Mapping back mean stress and volume from grid to particle.
     ix = @index(Global)
     if ix <= mp.num
         p2c = mp.p2c[ix]
-        σm  = grid.σm[p2c]/grid.vol[p2c]
-        mp.σij[ix, 1] = mp.sij[ix, 1]+σm
-        mp.σij[ix, 2] = mp.sij[ix, 2]+σm
-        mp.σij[ix, 3] = mp.sij[ix, 3]+σm
+        σm  = grid.σm[p2c] / grid.vol[p2c]
+        mp.σij[ix, 1] = mp.sij[ix, 1] + σm
+        mp.σij[ix, 2] = mp.sij[ix, 2] + σm
+        mp.σij[ix, 3] = mp.sij[ix, 3] + σm
         mp.σij[ix, 4] = mp.sij[ix, 4]
         # update mean stress tensor
-        σm = (mp.σij[ix, 1]+mp.σij[ix, 2]+mp.σij[ix, 3])*T2(0.333333) # 1/3 ≈ 0.333333
+        σm = (mp.σij[ix, 1] + mp.σij[ix, 2] + mp.σij[ix, 3]) * T2(0.333333) # 1/3 ≈ 0.333333
         mp.σm[ix] = σm
         # update deviatoric stress tensor
-        mp.sij[ix, 1] = mp.σij[ix, 1]-σm
-        mp.sij[ix, 2] = mp.σij[ix, 2]-σm
-        mp.sij[ix, 3] = mp.σij[ix, 3]-σm
+        mp.sij[ix, 1] = mp.σij[ix, 1] - σm
+        mp.sij[ix, 2] = mp.σij[ix, 2] - σm
+        mp.sij[ix, 3] = mp.σij[ix, 3] - σm
         mp.sij[ix, 4] = mp.σij[ix, 4]
     end
 end
@@ -956,20 +978,20 @@ Mapping back mean stress and volume from grid to particle.
     ix = @index(Global)
     if ix <= mp.num
         p2c = mp.p2c[ix]
-        σm  = grid.σm[p2c]/grid.vol[p2c]
-        mp.σij[ix, 1] = mp.sij[ix, 1]+σm
-        mp.σij[ix, 2] = mp.sij[ix, 2]+σm
-        mp.σij[ix, 3] = mp.sij[ix, 3]+σm
+        σm  = grid.σm[p2c] / grid.vol[p2c]
+        mp.σij[ix, 1] = mp.sij[ix, 1] + σm
+        mp.σij[ix, 2] = mp.sij[ix, 2] + σm
+        mp.σij[ix, 3] = mp.sij[ix, 3] + σm
         mp.σij[ix, 4] = mp.sij[ix, 4]
         mp.σij[ix, 5] = mp.sij[ix, 5]
         mp.σij[ix, 6] = mp.sij[ix, 6]
         # update mean stress tensor
-        σm = (mp.σij[ix, 1]+mp.σij[ix, 2]+mp.σij[ix, 3])*T2(0.333333) # 1/3 ≈ 0.333333
+        σm = (mp.σij[ix, 1] + mp.σij[ix, 2] + mp.σij[ix, 3]) * T2(0.333333) # 1/3 ≈ 0.333333
         mp.σm[ix] = σm
         # update deviatoric stress tensor
-        mp.sij[ix, 1] = mp.σij[ix, 1]-σm
-        mp.sij[ix, 2] = mp.σij[ix, 2]-σm
-        mp.sij[ix, 3] = mp.σij[ix, 3]-σm
+        mp.sij[ix, 1] = mp.σij[ix, 1] - σm
+        mp.sij[ix, 2] = mp.σij[ix, 2] - σm
+        mp.sij[ix, 3] = mp.σij[ix, 3] - σm
         mp.sij[ix, 4] = mp.σij[ix, 4]
         mp.sij[ix, 5] = mp.σij[ix, 5]
         mp.sij[ix, 6] = mp.σij[ix, 6]

@@ -56,15 +56,16 @@ This function will start to run the 2D MPM solver.
                 if (hdf5_switch==args.hdf5_step) || (hdf5_switch==T1(0))
                     device2host!(args, mp, dev_mp, Val(args.device))
                     g = create_group(fid, "group$(hdf5_id)")
-                    g["sig"   ] = mp.σij
-                    g["eps_s" ] = mp.ϵij_s
-                    g["epII"  ] = mp.epII
-                    g["epK"   ] = mp.epK
-                    g["mp_pos"] = mp.pos
-                    g["v_s"   ] = mp.Vs
-                    g["vol"   ] = mp.vol
-                    g["mass"  ] = mp.Ms
-                    g["time"  ] = Ti
+                    g["sig"        ] = mp.σij
+                    g["eps_s"      ] = mp.ϵij_s
+                    g["epII"       ] = mp.epII
+                    g["epK"        ] = mp.epK
+                    g["strain_rate"] = mp.dϵ
+                    g["mp_pos"     ] = mp.pos
+                    g["v_s"        ] = mp.Vs
+                    g["vol"        ] = mp.vol
+                    g["mass"       ] = mp.Ms
+                    g["time"       ] = Ti
                     if args.coupling==:TS
                         g["pp"      ] = mp.σw
                         g["eps_w"   ] = mp.ϵij_w

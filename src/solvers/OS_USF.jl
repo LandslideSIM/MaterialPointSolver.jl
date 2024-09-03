@@ -21,7 +21,7 @@ function procedure!(args    ::MODELARGS,
                             ::Val{:USF}) where {T2}
     Ti<args.Te ? G=args.gravity/args.Te*Ti : G=args.gravity
     dev = getBackend(args)
-    G2P_OS!(dev)(ndrange=mp.num, grid, mp)
+    G2P_OS!(dev)(ndrange=mp.num, grid, mp, ΔT)
     if args.constitutive==:hyperelastic
         hyE!(dev)(ndrange=mp.num, mp, pts_attr)
     elseif args.constitutive==:linearelastic

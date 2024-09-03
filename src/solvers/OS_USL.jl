@@ -131,7 +131,7 @@ function procedure!(args    ::MODELARGS,
     P2G_OS!(dev)(ndrange=mp.num, grid, mp, G)
     solvegrid_USL_OS!(dev)(ndrange=grid.node_num, grid, bc, ΔT, args.ζs)
     doublemapping1_OS!(dev)(ndrange=mp.num, grid, mp, pts_attr, ΔT, args.FLIP, args.PIC)
-    G2P_OS!(dev)(ndrange=mp.num, grid, mp)
+    G2P_OS!(dev)(ndrange=mp.num, grid, mp, ΔT)
     if args.constitutive==:hyperelastic
         hyE!(dev)(ndrange=mp.num, mp, pts_attr)
     elseif args.constitutive==:linearelastic

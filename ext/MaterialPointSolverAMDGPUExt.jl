@@ -61,6 +61,7 @@ function device2host!(
     copyto!(mp.σij  , dev_mp.σij  )
     copyto!(mp.epK  , dev_mp.epK  )
     copyto!(mp.epII , dev_mp.epII )
+    copyto!(mp.dϵ   , dev_mp.dϵ   )
     copyto!(mp.ϵij_s, dev_mp.ϵij_s)
     copyto!(mp.Ms   , dev_mp.Ms   )
     args.coupling==:TS ? (

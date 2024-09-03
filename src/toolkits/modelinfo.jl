@@ -243,7 +243,8 @@ function json2particle2D(jsondata, iInt, iFloat)
         ∂Ny      = reshape(jsondata.∂Ny   , num    , NIC    ),
         ΔFs      = reshape(jsondata.ΔFs   , num    , 4      ),
         ΔFw      = reshape(jsondata.ΔFw   , num_new, 4      ),
-        F        = reshape(jsondata.F     , num    , 4      )
+        F        = reshape(jsondata.F     , num    , 4      ),
+        dϵ       = jsondata.dϵ                               
     )
 end
 
@@ -301,7 +302,8 @@ function json2particle3D(jsondata, iInt, iFloat)
         ∂Nz      = reshape(jsondata.∂Nz   , num    , NIC    ),
         ΔFs      = reshape(jsondata.ΔFs   , num    , 9      ),
         ΔFw      = reshape(jsondata.ΔFw   , num_new, 9      ),
-        F        = reshape(jsondata.F     , num    , 9      )
+        F        = reshape(jsondata.F     , num    , 9      ),
+        dϵ       = jsondata.dϵ                               
     )
 end
 
@@ -417,19 +419,19 @@ function check_datasize(args    ::MODELARGS,
     mp_mem       = Base.summarysize(mp)
     pts_attr_mem = Base.summarysize(pts_attr)
     bc_mem       = Base.summarysize(bc)
-    mem_total    = args_mem+grid_mem+mp_mem+pts_attr_mem+bc_mem
+    mem_total    = args_mem + grid_mem + mp_mem + pts_attr_mem + bc_mem
 
-    args_size     = lpad(@sprintf("%.2f", args_mem    /1024^3), 5)
-    grid_size     = lpad(@sprintf("%.2f", grid_mem    /1024^3), 5)
-    mp_size       = lpad(@sprintf("%.2f", mp_mem      /1024^3), 5)
-    pts_attr_size = lpad(@sprintf("%.2f", pts_attr_mem/1024^3), 5)
-    bc_size       = lpad(@sprintf("%.2f", bc_mem      /1024^3), 5)
+    args_size     = lpad(@sprintf("%.2f", args_mem     / 1024 ^ 3), 5)
+    grid_size     = lpad(@sprintf("%.2f", grid_mem     / 1024 ^ 3), 5)
+    mp_size       = lpad(@sprintf("%.2f", mp_mem       / 1024 ^ 3), 5)
+    pts_attr_size = lpad(@sprintf("%.2f", pts_attr_mem / 1024 ^ 3), 5)
+    bc_size       = lpad(@sprintf("%.2f", bc_mem       / 1024 ^ 3), 5)
     
-    argsp      = lpad(@sprintf("%.2f", args_mem    /mem_total*100), 5)
-    gridp      = lpad(@sprintf("%.2f", grid_mem    /mem_total*100), 5)
-    mpp        = lpad(@sprintf("%.2f", mp_mem      /mem_total*100), 5)
-    pts_attr_p = lpad(@sprintf("%.2f", pts_attr_mem/mem_total*100), 5)
-    bcp        = lpad(@sprintf("%.2f", bc_mem      /mem_total*100), 5)
+    argsp      = lpad(@sprintf("%.2f", args_mem     / mem_total * 100), 5)
+    gridp      = lpad(@sprintf("%.2f", grid_mem     / mem_total * 100), 5)
+    mpp        = lpad(@sprintf("%.2f", mp_mem       / mem_total * 100), 5)
+    pts_attr_p = lpad(@sprintf("%.2f", pts_attr_mem / mem_total * 100), 5)
+    bcp        = lpad(@sprintf("%.2f", bc_mem       / mem_total * 100), 5)
 
     tbar = string("─"^19, "┬", "─"^11, "┬", "─"^8)
     bbar = string("─"^19, "┴", "─"^11, "┴", "─"^8)
@@ -447,10 +449,8 @@ end
 
 macro memcheck(expr)
     return quote        
-        # 计算内存大小
-        data = Base.summarysize($(esc(expr))) / 1024^3
+        data = Base.summarysize($(esc(expr))) / 1024 ^ 3
         data_str = @sprintf("%.2f GiB", data)
-        # 打印信息
-        @info "💾 $data_str"
+        @info "💾 $data_str" # print info
     end
 end
