@@ -2,7 +2,7 @@
 |           MaterialPointSolver.jl: High-performance MPM Solver for Geomechanics           |
 +------------------------------------------------------------------------------------------+
 |  File Name  : devicehelpfunc.jl                                                          |
-|  Description: GPU helper functions                                                       |
+|  Description: device helper functions                                                    |
 |  Programmer : Zenan Huo                                                                  |
 |  Start Date : 01/01/2022                                                                 |
 |  Affiliation: Risk Group, UNIL-ISTE                                                      |
@@ -77,7 +77,7 @@ end
 function Tpeak(
             ::Val{:CPU}; 
     datatype::Symbol=:FP64,
-    verbose ::Bool=true
+    ID      ::Int=0
 )
     bench_backend = CPU()
     println("\e[1;36m[ Test:\e[0m CPU → $(datatype)")
@@ -97,12 +97,8 @@ function Tpeak(
         push!(throughputs, T_tot)
     end
     value = round(maximum(throughputs), digits=2)
-    if verbose == true
-        @info "Tpeak on CPU: $(value) GiB/s"
-        return nothing
-    else
-        return value
-    end
+    @info "Tpeak on :CPU [$(ID)]: $(value) GiB/s"
+    return value
 end
 
 getBackend(::Val{:CPU}) = CPU()

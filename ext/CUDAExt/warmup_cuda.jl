@@ -1,7 +1,7 @@
 #==========================================================================================+
 |           MaterialPointSolver.jl: High-performance MPM Solver for Geomechanics           |
 +------------------------------------------------------------------------------------------+
-|  File Name  : warmup.jl                                                                  |
+|  File Name  : warmup_cuda.jl                                                             |
 |  Description: The minimal example of executing core functionality.                       |
 |  Programmer : Zenan Huo                                                                  |
 |  Start Date : 01/01/2022                                                                 |
@@ -9,29 +9,8 @@
 |  Functions  : warmup                                                                     |
 +==========================================================================================#
 
-export warmup
-
-"""
-    warmup(Val{:CPU}; ID=0)
-
-Description:
----
-The minimal example of executing core functionality is used to reduce the first-time running
-time. `devicetype` can be one of `:CPU`, `:CUDA`, or `:ROCm` (more backends will be support
-in the future).
-
-Examples:
----
-
-`warmup(Val(:CPU))` 
-
-or 
-
-`warmup(Val(:CUDA), ID=0)`.
-
-> Note that on the GPU from AMD, the device id start from `1`.
-"""
-function warmup(::Val{:CPU}; ID::Int=0)
+function warmup(::Val{:CUDA}; ID::Int=0)
+    CUDA.device!(ID)
     rtsdir = joinpath(homedir(), "MaterialPointSolverTEMP_$(ID)/")
     mkpath(rtsdir)
     init_grid_space_x = 1
@@ -80,7 +59,7 @@ function warmup(::Val{:CPU}; ID::Int=0)
         hdf5         = false,
         hdf5_step    = init_step,
         MVL          = true,
-        device       = :CPU,
+        device       = :CUDA,
         coupling     = :OS,
         scheme       = init_scheme,
         basis        = init_basis
@@ -141,7 +120,7 @@ function warmup(::Val{:CPU}; ID::Int=0)
     )
 
     # MPM solver
-    @info "warming up on :CPU [$(ID)] 🔥"
+    @info "warming up on :CUDA [$(ID)] 🔥"
     @suppress begin
         materialpointsolver!(args, grid, mp, pts_attr, bc)
     end
