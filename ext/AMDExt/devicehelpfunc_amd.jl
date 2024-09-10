@@ -11,6 +11,7 @@
 |               3. clean_gpu!   [2D & 3D]                                                  |
 |               4. Tpeak                                                                   |
 |               5. getBackend                                                              |
+|               6. getArray                                                                |
 +==========================================================================================#
 
 function host2device(
@@ -157,3 +158,4 @@ function Tpeak(
 end
 
 getBackend(::Val{:ROCm}) = ROCBackend()
+getArray(::Val{:ROCm}) = ROCArray

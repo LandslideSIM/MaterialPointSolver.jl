@@ -12,9 +12,10 @@
 |               4. memcpy!                                                                 |
 |               5. Tpeak                                                                   |
 |               6. getBackend                                                              |
+|               7. getArray                                                                |
 +==========================================================================================#
 
-export host2device, device2host!, clean_device!, memcpy!, Tpeak, getBackend
+export host2device, device2host!, clean_device!, memcpy!, Tpeak, getBackend, getArray
 
 """
     host2device(grid::GRID, mp::PARTICLE, pts_attr::PROPERTY, bc::BOUNDARY, 
@@ -102,3 +103,4 @@ function Tpeak(
 end
 
 getBackend(::Val{:CPU}) = CPU()
+getArray(::Val{:CPU}) = Array

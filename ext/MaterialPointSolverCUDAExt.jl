@@ -7,7 +7,7 @@ using MaterialPointSolver
 using Printf
 
 import MaterialPointSolver: host2device, device2host!, clean_device!, Tpeak, getBackend,
-    warmup, grf_gc!, grf_ec!
+    warmup, grf_gc!, grf_ec!, getArray
 
 CUDA.allowscalar(false) # disable scalar operation in GPU
 
