@@ -10,10 +10,13 @@
 +==========================================================================================#
 
 using MaterialPointSolver
+using KernelAbstractions
 using CairoMakie
 using CUDA
 
 warmup(Val(:CUDA))
+
+include(joinpath(@__DIR__, "funcs.jl"))
 
 init_grid_space_x = 0.00125
 init_grid_space_y = 0.00125
@@ -33,7 +36,7 @@ init_E            = init_Ks * (3 * (1 - 2 * init_ν))
 init_G            = init_E  / (2 * (1 +     init_ν))
 init_T            = 1
 init_Te           = 0
-init_ΔT           = 0.5 * init_grid_space_x / sqrt(init_E / init_ρs)
+init_ΔT           = 0.4 * init_grid_space_x / sqrt(init_E / init_ρs)
 init_step         = (t=floor(init_T/init_ΔT/200); t<10 ? t=1 : t)
 init_σt           = 0
 init_ϕ            = 19.8*π/180
@@ -42,7 +45,7 @@ init_ψ            = 0
 init_NIC          = 16
 init_basis        = :uGIMP
 init_phase        = 1
-init_scheme       = :MUSL
+init_scheme       = :USL
 iInt              = Int64
 iFloat            = Float64
 
@@ -52,8 +55,8 @@ args = Args2D{iInt, iFloat}(
     Te           = init_Te,
     ΔT           = init_ΔT,
     time_step    = :fixed,
-    FLIP         = 1.0,
-    PIC          = 0.0,
+    FLIP         = 1,
+    PIC          = 0,
     ζs           = init_ζs,
     project_name = init_project_name,
     project_path = init_project_path,
@@ -61,7 +64,7 @@ args = Args2D{iInt, iFloat}(
     animation    = false,
     hdf5         = false,
     hdf5_step    = init_step,
-    MVL          = true,
+    MVL          = false,
     device       = :CUDA,
     coupling     = :OS,
     scheme       = init_scheme,
@@ -119,7 +122,7 @@ bc = VBoundary2D{iInt, iFloat}(
 )
 
 # MPM solver
-materialpointsolver!(args, grid, mp, pts_attr, bc)
+materialpointsolver!(args, grid, mp, pts_attr, bc, workflow=testprocedure!)
 
 let 
     figregular = MaterialPointSolver.tnr

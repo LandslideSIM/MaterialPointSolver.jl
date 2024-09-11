@@ -14,7 +14,7 @@ using Adapt, ArrayAllocators, BenchmarkTools, Dates, DelimitedFiles, HDF5, JSON3
       KernelAbstractions, Printf, ProgressMeter, StructTypes, SysInfo, WriteVTK # PrecompileTools
 
 import KernelAbstractions.synchronize as KAsync
-import KernelAbstractions.Extras.LoopInfo.@unroll as @KAunroll
+import KernelAbstractions.Extras: @unroll as @KAunroll
 import Suppressor: @suppress
 
 const assets_dir = joinpath(@__DIR__  , "../docs/assets" )
@@ -26,7 +26,6 @@ const tnr        = joinpath(assets_dir, "fonts/tnr.ttf"  )
 const tnri       = joinpath(assets_dir, "fonts/tnri.ttf" )
 const tnrb       = joinpath(assets_dir, "fonts/tnrb.ttf" )
 const tnrib      = joinpath(assets_dir, "fonts/tnrib.ttf")
-
 
 # export functions
 export materialpointsolver!
