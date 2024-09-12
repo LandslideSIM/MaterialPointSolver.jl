@@ -131,17 +131,17 @@ This function will setup the particle to node and particle to cell index for 3D 
 ) where {T1, T2}
     ix = @index(Global)
     mp.p2c[ix] = unsafe_trunc(T1,
-        cld(mp_pos_2 - grid.range_y1, grid.space_y) +
-        fld(mp_pos_3 - grid.range_z1, grid.space_z) * 
+        cld(mp.pos[ix, 2] - grid.range_y1, grid.space_y) +
+        fld(mp.pos[ix, 3] - grid.range_z1, grid.space_z) * 
             grid.cell_num_y * grid.cell_num_x +
-        fld(mp_pos_1 - grid.range_x1, grid.space_x) * grid.cell_num_y)
+        fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * grid.cell_num_y)
     @KAunroll for iy in Int32(1):Int32(64)
         p2n = getP2N_uGIMP(grid, mp.p2c[ix], iy)
         mp.p2n[ix, iy] = p2n
         # compute distance betwe en particle and related nodes
-        Δdx = mp_pos_1 - grid.pos[p2n, 1]
-        Δdy = mp_pos_2 - grid.pos[p2n, 2]
-        Δdz = mp_pos_3 - grid.pos[p2n, 3]
+        Δdx = mp.pos[ix, 1] - grid.pos[p2n, 1]
+        Δdy = mp.pos[ix, 2] - grid.pos[p2n, 2]
+        Δdz = mp.pos[ix, 3] - grid.pos[p2n, 3]
         # compute basis function
         Nx, dNx = uGIMPbasis(Δdx, grid.space_x, mp.space_x)
         Ny, dNy = uGIMPbasis(Δdy, grid.space_y, mp.space_y)

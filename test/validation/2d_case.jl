@@ -2,11 +2,10 @@
 |           MaterialPointSolver.jl: High-performance MPM Solver for Geomechanics           |
 +------------------------------------------------------------------------------------------+
 |  File Name  : 2d_case.jl                                                                 |
-|  Description: Please run this file in VSCode with Julia ENV                              |
+|  Description: Case used to vaildate the functions                                        |
 |  Programmer : Zenan Huo                                                                  |
 |  Start Date : 01/01/2022                                                                 |
 |  Affiliation: Risk Group, UNIL-ISTE                                                      |
-|  Test Case  : 2D collapse in Drucker-Prager constitutive equation                        |
 +==========================================================================================#
 
 using MaterialPointSolver
@@ -18,12 +17,12 @@ warmup(Val(:CUDA))
 
 include(joinpath(@__DIR__, "funcs.jl"))
 
-init_grid_space_x = 0.00125
-init_grid_space_y = 0.00125
+init_grid_space_x = 0.0025
+init_grid_space_y = 0.0025
 init_grid_range_x = [-0.1, 0.82]
 init_grid_range_y = [-0.1, 0.12]
 init_mp_in_space  = 2
-init_project_name = "2d_collapse"
+init_project_name = "2d_case"
 init_project_path = joinpath(@__DIR__, init_project_name)
 init_constitutive = :druckerprager
 init_vtk_step     = 1
@@ -37,15 +36,15 @@ init_G            = init_E  / (2 * (1 +     init_ν))
 init_T            = 1
 init_Te           = 0
 init_ΔT           = 0.4 * init_grid_space_x / sqrt(init_E / init_ρs)
-init_step         = (t=floor(init_T/init_ΔT/200); t<10 ? t=1 : t)
+init_step         = floor(init_T / init_ΔT / 200)
 init_σt           = 0
-init_ϕ            = 19.8*π/180
+init_ϕ            = deg2rad(19.8)
 init_c            = 0
 init_ψ            = 0
-init_NIC          = 16
-init_basis        = :uGIMP
+init_NIC          = 4
+init_basis        = :linear
 init_phase        = 1
-init_scheme       = :USL
+init_scheme       = :USF
 iInt              = Int64
 iFloat            = Float64
 
@@ -65,7 +64,7 @@ args = Args2D{iInt, iFloat}(
     hdf5         = false,
     hdf5_step    = init_step,
     MVL          = false,
-    device       = :CUDA,
+    device       = :CPU,
     coupling     = :OS,
     scheme       = init_scheme,
     basis        = init_basis
