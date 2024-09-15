@@ -45,12 +45,12 @@ Reset some variables for the grid.
     grid::KernelGrid2D{T1, T2}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= grid.node_num
-        if ix <= grid.cell_num
-            grid.σm[ix] = T2(0.0)
+    if ix ≤ grid.node_num
+        if ix ≤ grid.cell_num
+            grid.σm[ix]  = T2(0.0)
             grid.vol[ix] = T2(0.0)
         end
-        grid.Ms[ix] = T2(0.0)
+        grid.Ms[ix]    = T2(0.0)
         grid.Ps[ix, 1] = T2(0.0)
         grid.Ps[ix, 2] = T2(0.0)
         grid.Fs[ix, 1] = T2(0.0)
@@ -69,12 +69,12 @@ Reset some variables for the grid.
     grid::KernelGrid3D{T1, T2}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= grid.node_num
-        if ix <= grid.cell_num
-            grid.σm[ix] = T2(0.0)
+    if ix ≤ grid.node_num
+        if ix ≤ grid.cell_num
+            grid.σm[ix]  = T2(0.0)
             grid.vol[ix] = T2(0.0)
         end
-        grid.Ms[ix] = T2(0.0)
+        grid.Ms[ix]    = T2(0.0)
         grid.Ps[ix, 1] = T2(0.0)
         grid.Ps[ix, 2] = T2(0.0)
         grid.Ps[ix, 3] = T2(0.0)
@@ -90,7 +90,7 @@ end
         ::Val{:linear}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= mp.num
+    if ix ≤ mp.num
         # update momentum and mass
         mp.Ms[ix] = mp.vol[ix] * mp.ρs[ix]
         mp.Ps[ix, 1] = mp.Ms[ix] * mp.Vs[ix, 1]
@@ -98,18 +98,17 @@ end
         # compute particle to cell and particle to node index
         mp.p2c[ix] = unsafe_trunc(T1, 
             cld(mp.pos[ix, 2] - grid.range_y1, grid.space_y) +
-            fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * 
-                grid.cell_num_y)
-        Base.Cartesian.@nexprs 4 iy -> begin
-            p2n = getP2N_linear(grid, mp.p2c[ix], Int32(iy))
+            fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * grid.cell_num_y)
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
+            p2n = getP2N_linear(grid, mp.p2c[ix], iy)
             mp.p2n[ix, iy] = p2n
             # compute distance between particle and related nodes
-            Δdx = mp.pos[ix, 1] - grid.pos[mp.p2n[ix, iy], 1]
-            Δdy = mp.pos[ix, 2] - grid.pos[mp.p2n[ix, iy], 2]
+            Δdx = mp.pos[ix, 1] - grid.pos[p2n, 1]
+            Δdy = mp.pos[ix, 2] - grid.pos[p2n, 2]
             # compute basis function
             Nx, dNx = linearBasis(Δdx, grid.space_x)
             Ny, dNy = linearBasis(Δdy, grid.space_y)
-            mp.Ni[ix, iy] = Nx * Ny # shape function
+            mp.Ni[ix, iy]  =  Nx * Ny
             mp.∂Nx[ix, iy] = dNx * Ny # x-gradient shape function
             mp.∂Ny[ix, iy] = dNy * Nx # y-gradient shape function
         end
@@ -122,7 +121,7 @@ end
         ::Val{:linear}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= mp.num
+    if ix ≤ mp.num
         # update momentum and mass
         mp.Ms[ix] = mp.vol[ix] * mp.ρs[ix]
         mp.Ps[ix, 1] = mp.Ms[ix] * mp.Vs[ix, 1]
@@ -133,20 +132,19 @@ end
             cld(mp.pos[ix, 2] - grid.range_y1, grid.space_y) +
             fld(mp.pos[ix, 3] - grid.range_z1, grid.space_z) * 
                 grid.cell_num_y * grid.cell_num_x +
-            fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * 
-                grid.cell_num_y)
-        Base.Cartesian.@nexprs 8 iy -> begin
-            p2n = getP2N_linear(grid, mp.p2c[ix], Int32(iy))
+            fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * grid.cell_num_y)
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
+            p2n = getP2N_linear(grid, mp.p2c[ix], iy)
             mp.p2n[ix, iy] = p2n
             # compute distance between particle and related nodes
-            Δdx = mp.pos[ix, 1] - grid.pos[mp.p2n[ix, iy], 1]
-            Δdy = mp.pos[ix, 2] - grid.pos[mp.p2n[ix, iy], 2]
-            Δdz = mp.pos[ix, 3] - grid.pos[mp.p2n[ix, iy], 3]
+            Δdx = mp.pos[ix, 1] - grid.pos[p2n, 1]
+            Δdy = mp.pos[ix, 2] - grid.pos[p2n, 2]
+            Δdz = mp.pos[ix, 3] - grid.pos[p2n, 3]
             # compute basis function
             Nx, dNx = linearBasis(Δdx, grid.space_x)
             Ny, dNy = linearBasis(Δdy, grid.space_y)
             Nz, dNz = linearBasis(Δdz, grid.space_z)
-            mp.Ni[ix, iy] = Nx * Ny * Nz
+            mp.Ni[ix, iy]  =  Nx * Ny * Nz
             mp.∂Nx[ix, iy] = dNx * Ny * Nz # x-gradient shape function
             mp.∂Ny[ix, iy] = dNy * Nx * Nz # y-gradient shape function
             mp.∂Nz[ix, iy] = dNz * Nx * Ny # z-gradient shape function
@@ -190,11 +188,10 @@ Description:
         # p2c index
         mp.p2c[ix] = unsafe_trunc(T1,
             cld(mp.pos[ix, 2] - grid.range_y1, grid.space_y) +
-            fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * 
-                grid.cell_num_y)
-        Base.Cartesian.@nexprs 16 iy -> begin
+            fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * grid.cell_num_y)
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
             # p2n index
-            p2n = getP2N_uGIMP(grid, mp.p2c[ix], Int32(iy))
+            p2n = getP2N_uGIMP(grid, mp.p2c[ix], iy)
             mp.p2n[ix, iy] = p2n
             # compute distance between particle and related nodes
             p2n = mp.p2n[ix, iy]
@@ -203,7 +200,7 @@ Description:
             # compute basis function
             Nx, dNx = uGIMPbasisx(Δdx, smem)
             Ny, dNy = uGIMPbasisy(Δdy, smem)
-            mp.Ni[ix, iy] = Nx * Ny
+            mp.Ni[ix, iy]  =  Nx * Ny
             mp.∂Nx[ix, iy] = dNx * Ny # x-gradient shape function
             mp.∂Ny[ix, iy] = dNy * Nx # y-gradient shape function
         end
@@ -216,29 +213,30 @@ end
         ::Val{:uGIMP}
 ) where {T1, T2}
     ix = @index(Global)
-    # update mass and momentum
-    mp.Ms[ix] = mp.vol[ix] * mp.ρs[ix]
-    mp.Ps[ix, 1] = mp.Ms[ix] * mp.Vs[ix, 1]
-    mp.Ps[ix, 2] = mp.Ms[ix] * mp.Vs[ix, 2]
-    # p2c index
-    mp.p2c[ix] = unsafe_trunc(T1,
-        cld(mp.pos[ix, 2] - grid.range_y1, grid.space_y) +
-        fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * 
-            grid.cell_num_y)
-    for iy in Int32(1):Int32(mp.NIC)
-        # p2n index
-        p2n = getP2N_uGIMP(grid, mp.p2c[ix], Int32(iy))
-        mp.p2n[ix, iy] = p2n
-        # compute distance between particle and related nodes
-        p2n = mp.p2n[ix, iy]
-        Δdx = mp.pos[ix, 1] - grid.pos[p2n, 1]
-        Δdy = mp.pos[ix, 2] - grid.pos[p2n, 2]
-        # compute basis function
-        Nx, dNx = uGIMPbasis(Δdx, grid.space_x, mp.space_x)
-        Ny, dNy = uGIMPbasis(Δdy, grid.space_y, mp.space_y)
-        mp.Ni[ix, iy] = Nx * Ny
-        mp.∂Nx[ix, iy] = dNx * Ny # x-gradient shape function
-        mp.∂Ny[ix, iy] = dNy * Nx # y-gradient shape function
+    if ix ≤ mp.num
+        # update mass and momentum
+        mp.Ms[ix] = mp.vol[ix] * mp.ρs[ix]
+        mp.Ps[ix, 1] = mp.Ms[ix] * mp.Vs[ix, 1]
+        mp.Ps[ix, 2] = mp.Ms[ix] * mp.Vs[ix, 2]
+        # p2c index
+        mp.p2c[ix] = unsafe_trunc(T1,
+            cld(mp.pos[ix, 2] - grid.range_y1, grid.space_y) +
+            fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * grid.cell_num_y)
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
+            # p2n index
+            p2n = getP2N_uGIMP(grid, mp.p2c[ix], iy)
+            mp.p2n[ix, iy] = p2n
+            # compute distance between particle and related nodes
+            p2n = mp.p2n[ix, iy]
+            Δdx = mp.pos[ix, 1] - grid.pos[p2n, 1]
+            Δdy = mp.pos[ix, 2] - grid.pos[p2n, 2]
+            # compute basis function
+            Nx, dNx = uGIMPbasis(Δdx, grid.space_x, mp.space_x)
+            Ny, dNy = uGIMPbasis(Δdy, grid.space_y, mp.space_y)
+            mp.Ni[ix, iy]  =  Nx * Ny
+            mp.∂Nx[ix, iy] = dNx * Ny # x-gradient shape function
+            mp.∂Ny[ix, iy] = dNy * Nx # y-gradient shape function
+        end
     end
 end
 
@@ -319,38 +317,40 @@ end
         ::Val{:uGIMP}
 ) where {T1, T2}
     ix = @index(Global)
-    # update particle mass and momentum
-    mp_Ms = mp.vol[ix] * mp.ρs[ix]
-    mp.Ms[ix] = mp_Ms
-    mp.Ps[ix, 1] = mp_Ms * mp.Vs[ix, 1]
-    mp.Ps[ix, 2] = mp_Ms * mp.Vs[ix, 2]
-    mp.Ps[ix, 3] = mp_Ms * mp.Vs[ix, 3]
-    # get temp variables
-    mp_pos_1 = mp.pos[ix, 1]
-    mp_pos_2 = mp.pos[ix, 2]
-    mp_pos_3 = mp.pos[ix, 3]
-    # p2c index
-    mp.p2c[ix] = unsafe_trunc(T1,
-        cld(mp_pos_2 - grid.range_y1, grid.space_y) +
-        fld(mp_pos_3 - grid.range_z1, grid.space_z) * 
-            grid.cell_num_y * grid.cell_num_x +
-        fld(mp_pos_1 - grid.range_x1, grid.space_x) * grid.cell_num_y)
-    for iy in Int32(1):Int32(mp.NIC)
-        # p2n index
-        p2n = getP2N_uGIMP(grid, mp.p2c[ix], iy)
-        mp.p2n[ix, iy] = p2n
-        # compute distance betwe en particle and related nodes
-        Δdx = mp_pos_1 - grid.pos[p2n, 1]
-        Δdy = mp_pos_2 - grid.pos[p2n, 2]
-        Δdz = mp_pos_3 - grid.pos[p2n, 3]
-        # compute basis function
-        Nx, dNx = uGIMPbasis(Δdx, grid.space_x, mp.space_x)
-        Ny, dNy = uGIMPbasis(Δdy, grid.space_y, mp.space_y)
-        Nz, dNz = uGIMPbasis(Δdz, grid.space_z, mp.space_z)
-        mp.Ni[ix, iy] = Nx * Ny * Nz
-        mp.∂Nx[ix, iy] = dNx * Ny * Nz # x-gradient basis function
-        mp.∂Ny[ix, iy] = dNy * Nx * Nz # y-gradient basis function
-        mp.∂Nz[ix, iy] = dNz * Nx * Ny # z-gradient basis function
+    if ix ≤ mp.num
+        # update particle mass and momentum
+        mp_Ms = mp.vol[ix] * mp.ρs[ix]
+        mp.Ms[ix] = mp_Ms
+        mp.Ps[ix, 1] = mp_Ms * mp.Vs[ix, 1]
+        mp.Ps[ix, 2] = mp_Ms * mp.Vs[ix, 2]
+        mp.Ps[ix, 3] = mp_Ms * mp.Vs[ix, 3]
+        # get temp variables
+        mp_pos_1 = mp.pos[ix, 1]
+        mp_pos_2 = mp.pos[ix, 2]
+        mp_pos_3 = mp.pos[ix, 3]
+        # p2c index
+        mp.p2c[ix] = unsafe_trunc(T1,
+            cld(mp_pos_2 - grid.range_y1, grid.space_y) +
+            fld(mp_pos_3 - grid.range_z1, grid.space_z) * 
+                grid.cell_num_y * grid.cell_num_x +
+            fld(mp_pos_1 - grid.range_x1, grid.space_x) * grid.cell_num_y)
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
+            # p2n index
+            p2n = getP2N_uGIMP(grid, mp.p2c[ix], iy)
+            mp.p2n[ix, iy] = p2n
+            # compute distance betwe en particle and related nodes
+            Δdx = mp_pos_1 - grid.pos[p2n, 1]
+            Δdy = mp_pos_2 - grid.pos[p2n, 2]
+            Δdz = mp_pos_3 - grid.pos[p2n, 3]
+            # compute basis function
+            Nx, dNx = uGIMPbasis(Δdx, grid.space_x, mp.space_x)
+            Ny, dNy = uGIMPbasis(Δdy, grid.space_y, mp.space_y)
+            Nz, dNz = uGIMPbasis(Δdz, grid.space_z, mp.space_z)
+            mp.Ni[ix, iy]  =  Nx * Ny * Nz
+            mp.∂Nx[ix, iy] = dNx * Ny * Nz # x-gradient basis function
+            mp.∂Ny[ix, iy] = dNy * Nx * Nz # y-gradient basis function
+            mp.∂Nz[ix, iy] = dNz * Nx * Ny # z-gradient basis function
+        end
     end
 end
 
@@ -367,10 +367,10 @@ P2G procedure for scattering the mass, momentum, and forces from particles to gr
     gravity::T2
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= mp.num
-        for iy in Int32(1):Int32(mp.NIC)
+    if ix ≤ mp.num
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
             Ni = mp.Ni[ix, iy]
-            if Ni != T2(0.0)
+            if Ni ≠ T2(0.0)
                 ∂Nx = mp.∂Nx[ix, iy]
                 ∂Ny = mp.∂Ny[ix, iy]
                 p2n = mp.p2n[ix, iy]
@@ -404,10 +404,10 @@ P2G procedure for scattering the mass, momentum, and forces from particles to gr
     gravity::T2
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= mp.num
-        for iy in Int32(1):Int32(mp.NIC)
+    if ix ≤ mp.num
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
             Ni = mp.Ni[ix, iy]
-            if Ni != T2(0.0)
+            if Ni ≠ T2(0.0)
                 ∂Nx = mp.∂Nx[ix, iy]
                 ∂Ny = mp.∂Ny[ix, iy]
                 ∂Nz = mp.∂Nz[ix, iy]
@@ -451,8 +451,8 @@ Description:
     ζs  ::T2
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= grid.node_num && grid.Ms[ix] != Int32(0)
-        Ms_denom = T2(1.0) / grid.Ms[ix]
+    if ix ≤ grid.node_num
+        iszero(grid.Ms[ix]) ? Ms_denom = T2(0.0) : Ms_denom = T2(1.0) / grid.Ms[ix]
         # compute nodal velocity
         grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
         grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
@@ -466,8 +466,8 @@ Description:
         grid.Vs_T[ix, 1] = (grid.Ps[ix, 1] + Fs_x * ΔT) * Ms_denom
         grid.Vs_T[ix, 2] = (grid.Ps[ix, 2] + Fs_y * ΔT) * Ms_denom
         # boundary condition
-        bc.Vx_s_Idx[ix] == T1(1) ? grid.Vs_T[ix, 1] = bc.Vx_s_Val[ix] : nothing
-        bc.Vy_s_Idx[ix] == T1(1) ? grid.Vs_T[ix, 2] = bc.Vy_s_Val[ix] : nothing
+        bc.Vx_s_Idx[ix] ≠ T1(0) ? grid.Vs_T[ix, 1] = bc.Vx_s_Val[ix] : nothing
+        bc.Vy_s_Idx[ix] ≠ T1(0) ? grid.Vs_T[ix, 2] = bc.Vy_s_Val[ix] : nothing
         # reset grid momentum
         grid.Ps[ix, 1] = T2(0.0)
         grid.Ps[ix, 2] = T2(0.0)
@@ -489,8 +489,8 @@ Description:
     ζs  ::T2
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= grid.node_num && grid.Ms[ix] != Int32(0)
-        Ms_denom = T2(1.0) / grid.Ms[ix]
+    if ix ≤ grid.node_num
+        iszero(grid.Ms[ix]) ? Ms_denom = T2(0.0) : Ms_denom = T2(1.0) / grid.Ms[ix]
         # compute nodal velocity
         Ps_1 = grid.Ps[ix, 1]
         Ps_2 = grid.Ps[ix, 2]
@@ -511,9 +511,9 @@ Description:
         grid.Vs_T[ix, 2] = (Ps_2 + Fs_y * ΔT) * Ms_denom
         grid.Vs_T[ix, 3] = (Ps_3 + Fs_z * ΔT) * Ms_denom
         # boundary condition
-        bc.Vx_s_Idx[ix] == T1(1) ? grid.Vs_T[ix, 1] = bc.Vx_s_Val[ix] : nothing
-        bc.Vy_s_Idx[ix] == T1(1) ? grid.Vs_T[ix, 2] = bc.Vy_s_Val[ix] : nothing
-        bc.Vz_s_Idx[ix] == T1(1) ? grid.Vs_T[ix, 3] = bc.Vz_s_Val[ix] : nothing
+        bc.Vx_s_Idx[ix] ≠ T1(0) ? grid.Vs_T[ix, 1] = bc.Vx_s_Val[ix] : nothing
+        bc.Vy_s_Idx[ix] ≠ T1(0) ? grid.Vs_T[ix, 2] = bc.Vy_s_Val[ix] : nothing
+        bc.Vz_s_Idx[ix] ≠ T1(0) ? grid.Vs_T[ix, 3] = bc.Vz_s_Val[ix] : nothing
         # reset grid momentum
         grid.Ps[ix, 1] = T2(0.0)
         grid.Ps[ix, 2] = T2(0.0)
@@ -538,9 +538,10 @@ Description:
     FLIP    ::T2,
     PIC     ::T2
 ) where {T1, T2}
+    # 4/3 = 1.333333
     ix = @index(Global)
     # update particle position & velocity
-    if ix <= mp.num
+    if ix ≤ mp.num
         pid = pts_attr.layer[ix]
         Ks  = pts_attr.Ks[pid]
         G   = pts_attr.G[pid]
@@ -548,9 +549,9 @@ Description:
         tmp_vy_s1 = tmp_vy_s2 = T2(0.0)
         tmp_pos_x = tmp_pos_y = T2(0.0)
         # update particle position
-        for iy in Int32(1):Int32(mp.NIC)
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
             Ni = mp.Ni[ix, iy]
-            if Ni != T2(0.0)
+            if Ni ≠ T2(0.0)
                 p2n = mp.p2n[ix, iy]
                 tmp_pos_x += Ni *  grid.Vs_T[p2n, 1]
                 tmp_pos_y += Ni *  grid.Vs_T[p2n, 2]
@@ -566,15 +567,12 @@ Description:
         mp.Vs[ix, 1] = FLIP * (mp.Vs[ix, 1] + tmp_vx_s1) + PIC * tmp_vx_s2
         mp.Vs[ix, 2] = FLIP * (mp.Vs[ix, 2] + tmp_vy_s1) + PIC * tmp_vy_s2
         # update particle momentum
-        Vs_1 = mp.Vs[ix, 1]
-        Vs_2 = mp.Vs[ix, 2]
-        Ms   = mp.Ms[ix]
-        mp.Ps[ix, 1] = Ms * Vs_1
-        mp.Ps[ix, 2] = Ms * Vs_2
+        mp.Ps[ix, 1] = mp.Ms[ix] * mp.Vs[ix, 1]
+        mp.Ps[ix, 2] = mp.Ms[ix] * mp.Vs[ix, 2]
         # update CFL conditions
         sqr = sqrt((Ks + G * T2(1.333333)) / mp.ρs[ix]) # 4/3 ≈ 1.333333
-        cd_sx = grid.space_x / (sqr + abs(Vs_1))
-        cd_sy = grid.space_y / (sqr + abs(Vs_2))
+        cd_sx = grid.space_x / (sqr + abs(mp.Vs[ix, 1]))
+        cd_sy = grid.space_y / (sqr + abs(mp.Vs[ix, 2]))
         mp.cfl[ix] = min(cd_sx, cd_sy)
     end
 end
@@ -598,7 +596,7 @@ Description:
 ) where {T1, T2}
     ix = @index(Global)
     # update particle position & velocity
-    if ix <= mp.num
+    if ix ≤ mp.num
         pid = pts_attr.layer[ix]
         Ks  = pts_attr.Ks[pid]
         G   = pts_attr.G[pid]
@@ -606,9 +604,9 @@ Description:
         tmp_vy_s2 = tmp_vz_s1 = tmp_vz_s2 = T2(0.0)
         tmp_pos_x = tmp_pos_y = tmp_pos_z = T2(0.0)
         # update particle position
-        for iy in Int32(1):Int32(mp.NIC)
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
             Ni = mp.Ni[ix, iy]
-            if Ni != T2(0.0)
+            if Ni ≠ T2(0.0)
                 p2n   = mp.p2n[ix, iy]
                 Vs_T1 = grid.Vs_T[p2n, 1]
                 Vs_T2 = grid.Vs_T[p2n, 2]
@@ -633,18 +631,14 @@ Description:
         mp.Vs[ix, 2] = FLIP * (mp.Vs[ix, 2] + tmp_vy_s1) + PIC * tmp_vy_s2
         mp.Vs[ix, 3] = FLIP * (mp.Vs[ix, 3] + tmp_vz_s1) + PIC * tmp_vz_s2
         # update particle momentum
-        Vs_1 = mp.Vs[ix, 1]
-        Vs_2 = mp.Vs[ix, 2]
-        Vs_3 = mp.Vs[ix, 3]
-        Ms   = mp.Ms[ix]
-        mp.Ps[ix, 1] = Ms * Vs_1
-        mp.Ps[ix, 2] = Ms * Vs_2
-        mp.Ps[ix, 3] = Ms * Vs_3
+        mp.Ps[ix, 1] = mp.Ms[ix] * mp.Vs[ix, 1]
+        mp.Ps[ix, 2] = mp.Ms[ix] * mp.Vs[ix, 2]
+        mp.Ps[ix, 3] = mp.Ms[ix] * mp.Vs[ix, 3]
         # update CFL conditions
         sqr = sqrt((Ks + G * T2(1.333333)) / mp.ρs[ix])
-        cd_sx = grid.space_x / (sqr + abs(Vs_1))
-        cd_sy = grid.space_y / (sqr + abs(Vs_2))
-        cd_sz = grid.space_z / (sqr + abs(Vs_3))
+        cd_sx = grid.space_x / (sqr + abs(mp.Vs[ix, 1]))
+        cd_sy = grid.space_y / (sqr + abs(mp.Vs[ix, 2]))
+        cd_sz = grid.space_z / (sqr + abs(mp.Vs[ix, 3]))
         mp.cfl[ix] = min(cd_sx, cd_sy, cd_sz)
     end
 end
@@ -663,9 +657,9 @@ Scatter momentum from particles to grid.
     ix = @index(Global)
     if ix ≤ mp.num
         # update particle position & velocity
-        for iy in Int32(1):Int32(mp.NIC)
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
             Ni = mp.Ni[ix, iy]
-            if Ni != T2(0.0)
+            if Ni ≠ T2(0.0)
                 p2n = mp.p2n[ix, iy]
                 @KAatomic grid.Ps[p2n, 1] += mp.Ps[ix, 1] * Ni
                 @KAatomic grid.Ps[p2n, 2] += mp.Ps[ix, 2] * Ni
@@ -686,11 +680,11 @@ Scatter momentum from particles to grid.
     mp  ::KernelParticle3D{T1, T2}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= mp.num
+    if ix ≤ mp.num
         # update particle position & velocity
-        for iy in Int32(1):Int32(mp.NIC)
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
             Ni = mp.Ni[ix, iy]
-            if Ni != T2(0.0)
+            if Ni ≠ T2(0.0)
                 p2n = mp.p2n[ix, iy]
                 @KAatomic grid.Ps[p2n, 1] += mp.Ps[ix, 1] * Ni
                 @KAatomic grid.Ps[p2n, 2] += mp.Ps[ix, 2] * Ni
@@ -713,14 +707,14 @@ Solve equations on grid.
     ΔT  ::T2
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= grid.node_num && grid.Ms[ix] != Int32(0)
-        Ms_denom = T2(1.0) / grid.Ms[ix]
+    if ix ≤ grid.node_num
+        iszero(grid.Ms[ix]) ? Ms_denom = T2(0.0) : Ms_denom = T2(1.0) / grid.Ms[ix]
         # compute nodal velocities
         grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
         grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
         # fixed Dirichlet nodes
-        bc.Vx_s_Idx[ix] == T1(1) ? grid.Vs[ix, 1] = bc.Vx_s_Val[ix] : nothing
-        bc.Vy_s_Idx[ix] == T1(1) ? grid.Vs[ix, 2] = bc.Vy_s_Val[ix] : nothing
+        bc.Vx_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 1] = bc.Vx_s_Val[ix] : nothing
+        bc.Vy_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 2] = bc.Vy_s_Val[ix] : nothing
         # compute nodal displacement
         grid.Δd_s[ix, 1] = grid.Vs[ix, 1] * ΔT
         grid.Δd_s[ix, 2] = grid.Vs[ix, 2] * ΔT
@@ -740,16 +734,16 @@ Solve equations on grid.
     ΔT  ::T2
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= grid.node_num && grid.Ms[ix] != Int32(0)
-        Ms_denom = T2(1.0) / grid.Ms[ix]
+    if ix ≤ grid.node_num
+        iszero(grid.Ms[ix]) ? Ms_denom = T2(0.0) : Ms_denom = T2(1.0) / grid.Ms[ix]
         # compute nodal velocities
         grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
         grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
         grid.Vs[ix, 3] = grid.Ps[ix, 3] * Ms_denom
         # fixed Dirichlet nodes
-        bc.Vx_s_Idx[ix] == T1(1) ? grid.Vs[ix, 1] = bc.Vx_s_Val[ix] : nothing
-        bc.Vy_s_Idx[ix] == T1(1) ? grid.Vs[ix, 2] = bc.Vy_s_Val[ix] : nothing
-        bc.Vz_s_Idx[ix] == T1(1) ? grid.Vs[ix, 3] = bc.Vz_s_Val[ix] : nothing
+        bc.Vx_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 1] = bc.Vx_s_Val[ix] : nothing
+        bc.Vy_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 2] = bc.Vy_s_Val[ix] : nothing
+        bc.Vz_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 3] = bc.Vz_s_Val[ix] : nothing
         # compute nodal displacement
         grid.Δd_s[ix, 1] = grid.Vs[ix, 1] * ΔT
         grid.Δd_s[ix, 2] = grid.Vs[ix, 2] * ΔT
@@ -770,11 +764,11 @@ Update particle information.
     ΔT  ::T2
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= mp.num
+    if ix ≤ mp.num
         ΔT_1 = T2(1.0) / ΔT
         dF1 = dF2 = dF3 = dF4 = T2(0.0)
-        for iy in Int32(1):Int32(mp.NIC)
-            if mp.Ni[ix, iy] != T2(0.0)
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
+            if mp.Ni[ix, iy] ≠ T2(0.0)
                 p2n = mp.p2n[ix, iy]
                 ∂Nx = mp.∂Nx[ix, iy]
                 ∂Ny = mp.∂Ny[ix, iy]
@@ -809,9 +803,9 @@ Update particle information.
         mp.F[ix, 3] = (dF4 + T2(1.0)) * F3 + dF3 * F1
         mp.F[ix, 4] = (dF4 + T2(1.0)) * F4 + dF3 * F2
         # update jacobian value and particle volume
-        mp.J[ix] = mp.F[ix, 1] * mp.F[ix, 4] - mp.F[ix, 2] * mp.F[ix, 3]
+        mp.J[ix]   = mp.F[ix, 1] * mp.F[ix, 4] - mp.F[ix, 2] * mp.F[ix, 3]
         mp.vol[ix] = mp.J[ix] * mp.vol_init[ix]
-        mp.ρs[ix] = mp.ρs_init[ix] / mp.J[ix]
+        mp.ρs[ix]  = mp.ρs_init[ix] / mp.J[ix]
     end
 end
 
@@ -828,11 +822,11 @@ Update particle information.
     ΔT  ::T2
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= mp.num
+    if ix ≤ mp.num
         ΔT_1 = T2(1.0) / ΔT
         dF1 = dF2 = dF3 = dF4 = dF5 = dF6 = dF7 = dF8 = dF9 = T2(0.0)
-        for iy in Int32(1):Int32(mp.NIC)
-            if mp.Ni[ix, iy] != T2(0.0)
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
+            if mp.Ni[ix, iy] ≠ T2(0.0)
                 p2n = mp.p2n[ix, iy]
                 ∂Nx = mp.∂Nx[ix, iy]; ds1 = grid.Δd_s[p2n, 1]
                 ∂Ny = mp.∂Ny[ix, iy]; ds2 = grid.Δd_s[p2n, 2]
@@ -890,7 +884,7 @@ Update particle information.
                    mp.F[ix, 8] * mp.F[ix, 6] * mp.F[ix, 1] - 
                    mp.F[ix, 9] * mp.F[ix, 4] * mp.F[ix, 2] 
         mp.vol[ix] = mp.J[ix] * mp.vol_init[ix]
-        mp.ρs[ix] = mp.ρs_init[ix] / mp.J[ix]
+        mp.ρs[ix]  = mp.ρs_init[ix] / mp.J[ix]
     end
 end
 
@@ -906,10 +900,10 @@ Mapping mean stress and volume from particle to grid.
     mp  ::KernelParticle2D{T1, T2}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= mp.num
+    if ix ≤ mp.num
         p2c = mp.p2c[ix]
         vol = mp.vol[ix]
-        @KAatomic grid.σm[ p2c] += vol * mp.σm[ix]
+        @KAatomic grid.σm[p2c]  += vol * mp.σm[ix]
         @KAatomic grid.vol[p2c] += vol
     end
 end
@@ -926,10 +920,10 @@ Mapping mean stress and volume from particle to grid.
     mp  ::KernelParticle3D{T1, T2}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= mp.num
+    if ix ≤ mp.num
         p2c = mp.p2c[ix]
         vol = mp.vol[ix]
-        @KAatomic grid.σm[ p2c] += vol * mp.σm[ix]
+        @KAatomic grid.σm[p2c]  += vol * mp.σm[ix]
         @KAatomic grid.vol[p2c] += vol
     end
 end
@@ -946,7 +940,7 @@ Mapping back mean stress and volume from grid to particle.
     mp  ::KernelParticle2D{T1, T2}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix <= mp.num
+    if ix ≤ mp.num
         p2c = mp.p2c[ix]
         σm  = grid.σm[p2c] / grid.vol[p2c]
         mp.σij[ix, 1] = mp.sij[ix, 1] + σm

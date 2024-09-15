@@ -107,7 +107,7 @@ Generates animation by using the data from HDF5 file (2D).
     anim_path = mkpath(joinpath(args.project_path, "animation"))
     mps_path  = joinpath(args.project_path, args.project_name)
     nds_path  = joinpath(args.project_path, "grid")
-    p         = Progress(length(1:1:itr)-1; 
+    p         = Progress(length(1:1:itr)-1, dt=3.0; 
         desc      = "\e[1;36m[ Info:\e[0m $(lpad("ani_vtu", 7))",
         color     = :white,
         barlen    = 12,
@@ -183,7 +183,7 @@ Generates animation by using the data from HDF5 file (3D).
     anim_path = mkpath(joinpath(args.project_path, "animation"))
     mps_path  = joinpath(args.project_path, args.project_name)
     nds_path  = joinpath(args.project_path, "grid")
-    p         = Progress(length(1:1:itr)-1; 
+    p         = Progress(length(1:1:itr)-1, dt=3.0; 
         desc      = "\e[1;36m[ Info:\e[0m $(lpad("ani_vtu", 7))",
         color     = :white,
         barlen    = 12,
