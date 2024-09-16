@@ -326,12 +326,12 @@ P2G procedure for scattering the mass, momentum, and forces from particles to gr
                 @KAatomic grid.Pw[p2n, 2] += Ni * mp.Pw[ix, 2]
                 # compute nodal total force
                 @KAatomic grid.Fw[p2n, 1] += -vol * (∂Nx * mp.σw[ix])
-                @KAatomic grid.Fw[p2n, 2] += -vol * (∂Ny * mp.σw[ix])     +
+                @KAatomic grid.Fw[p2n, 2] += -vol * (∂Ny * mp.σw[ix]) +
                                               Ni  * mp.Mw[ix] * gravity
-                @KAatomic grid.Fs[p2n, 1] += -vol * (∂Nx * mp.σij[ix, 1]  + 
-                                                     ∂Ny * mp.σij[ix, 4])
-                @KAatomic grid.Fs[p2n, 2] += -vol * (∂Ny * mp.σij[ix, 2]  + 
-                                                     ∂Nx * mp.σij[ix, 4]) +
+                @KAatomic grid.Fs[p2n, 1] += -vol * (∂Nx * (mp.σij[ix, 1]  + mp.σw[ix])  + 
+                                                     ∂Ny *  mp.σij[ix, 4])
+                @KAatomic grid.Fs[p2n, 2] += -vol * (∂Ny * (mp.σij[ix, 2]  + mp.σw[ix])  + 
+                                                     ∂Nx *  mp.σij[ix, 4]) +
                                               Ni  * mp.Mi[ix] * gravity
                 @KAatomic grid.Fdrag[p2n, 1] += Ni * tmp_drag * (mp.Vw[ix, 1] - 
                                                                  mp.Vs[ix, 1])
@@ -384,15 +384,15 @@ P2G procedure for scattering the mass, momentum, and forces from particles to gr
                 @KAatomic grid.Fw[p2n, 2] += -vol * (∂Ny * mp.σw[ix])
                 @KAatomic grid.Fw[p2n, 3] += -vol * (∂Nz * mp.σw[ix]) + 
                                               Ni  * mp.Mw[ix] * gravity
-                @KAatomic grid.Fs[p2n, 1] += -vol * (∂Nx * mp.σij[ix, 1]  + 
-                                                     ∂Ny * mp.σij[ix, 4]  + 
-                                                     ∂Nz * mp.σij[ix, 6])
-                @KAatomic grid.Fs[p2n, 2] += -vol * (∂Ny * mp.σij[ix, 2]  + 
-                                                     ∂Nx * mp.σij[ix, 4]  + 
-                                                     ∂Nz * mp.σij[ix, 5])
-                @KAatomic grid.Fs[p2n, 3] += -vol * (∂Nz * mp.σij[ix, 3]  + 
-                                                     ∂Nx * mp.σij[ix, 6]  + 
-                                                     ∂Ny * mp.σij[ix, 5]) + 
+                @KAatomic grid.Fs[p2n, 1] += -vol * (∂Nx * (mp.σij[ix, 1]  + mp.σw[ix])  + 
+                                                     ∂Ny *  mp.σij[ix, 4]  + 
+                                                     ∂Nz *  mp.σij[ix, 6])
+                @KAatomic grid.Fs[p2n, 2] += -vol * (∂Ny * (mp.σij[ix, 2]  + mp.σw[ix])  + 
+                                                     ∂Nx *  mp.σij[ix, 4]  + 
+                                                     ∂Nz *  mp.σij[ix, 5])
+                @KAatomic grid.Fs[p2n, 3] += -vol * (∂Nz * (mp.σij[ix, 3]  + mp.σw[ix])  + 
+                                                     ∂Nx *  mp.σij[ix, 6]  + 
+                                                     ∂Ny *  mp.σij[ix, 5]) + 
                                               Ni  * mp.Mi[ix] * gravity
                 @KAatomic grid.Fdrag[p2n, 1] += Ni * tdg * (mp.Vw[ix, 1] - mp.Vs[ix, 1])
                 @KAatomic grid.Fdrag[p2n, 2] += Ni * tdg * (mp.Vw[ix, 2] - mp.Vs[ix, 2])
@@ -542,8 +542,8 @@ Description:
 end
 
 """
-    doublemapping1_TS!(grid::KernelGrid2D{T1, T2}, mp::KernelParticle2D{T1, T2}, 
-        pts_attr::KernelParticleProperty{T1, T2}, ΔT::T2, FLIP::T2, PIC::T2)
+    doublemapping1_TS!(grid::KernelGrid2D{T1, T2}, mp::KernelParticle2D{T1, T2}, ΔT::T2, 
+        FLIP::T2, PIC::T2)
 
 Description:
 ---
@@ -553,17 +553,12 @@ Description:
 @kernel inbounds=true function doublemapping1_TS!(
     grid    ::          KernelGrid2D{T1, T2},
     mp      ::      KernelParticle2D{T1, T2},
-    pts_attr::KernelParticleProperty{T1, T2},
     ΔT      ::T2,
     FLIP    ::T2,
     PIC     ::T2
 ) where {T1, T2}
-    # 4/3 = 1.333333
     ix = @index(Global)
     if ix ≤ mp.num
-        pid = pts_attr.layer[ix]
-        Ks  = pts_attr.Ks[pid]
-        G   = pts_attr.G[pid]
         tmp_vx_s1 = tmp_vx_s2 = tmp_vy_s1 = tmp_vy_s2 = T2(0.0)
         tmp_vx_w1 = tmp_vx_w2 = tmp_vy_w1 = tmp_vy_w2 = T2(0.0)
         tmp_pos_x = tmp_pos_y = T2(0.0)
@@ -596,17 +591,12 @@ Description:
         mp.Ps[ix, 2] = mp.Ms[ix] * mp.Vs[ix, 2] * (T2(1.0) - mp.porosity[ix])
         mp.Pw[ix, 1] = mp.Mw[ix] * mp.Vw[ix, 1] *            mp.porosity[ix]
         mp.Pw[ix, 2] = mp.Mw[ix] * mp.Vw[ix, 2] *            mp.porosity[ix]
-        # update CFL conditions
-        sqr = sqrt((Ks + G * T2(1.333333)) / mp.ρs[ix])
-        cd_sx = grid.space_x / (sqr + abs(mp.Vs[ix, 1]))
-        cd_sy = grid.space_y / (sqr + abs(mp.Vs[ix, 2]))
-        mp.cfl[ix] = min(cd_sx, cd_sy)
     end
 end
 
 """
-    doublemapping1_TS!(grid::KernelGrid3D{T1, T2}, mp::KernelParticle3D{T1, T2}, 
-        pts_attr::KernelParticleProperty{T1, T2}, ΔT::T2, FLIP::T2, PIC::T2)
+    doublemapping1_TS!(grid::KernelGrid3D{T1, T2}, mp::KernelParticle3D{T1, T2}, ΔT::T2, 
+        FLIP::T2, PIC::T2)
 
 Description:
 ---
@@ -616,16 +606,12 @@ Description:
 @kernel inbounds=true function doublemapping1_TS!(
     grid    ::          KernelGrid3D{T1, T2},
     mp      ::      KernelParticle3D{T1, T2},
-    pts_attr::KernelParticleProperty{T1, T2},
     ΔT      ::T2,
     FLIP    ::T2,
     PIC     ::T2
 ) where {T1, T2}
     ix = @index(Global)
     if ix ≤ mp.num
-        pid = pts_attr.layer[ix]
-        Ks  = pts_attr.Ks[pid]
-        G   = pts_attr.G[pid]
         tmp_vx_s1 = tmp_vx_s2 = tmp_vy_s1 = tmp_vy_s2 = tmp_vz_s1 = tmp_vz_s2 = T2(0.0)
         tmp_vx_w1 = tmp_vx_w2 = tmp_vy_w1 = tmp_vy_w2 = tmp_vz_w1 = tmp_vz_w2 = T2(0.0)
         tmp_pos_x = tmp_pos_y = tmp_pos_z = T2(0.0)
@@ -668,11 +654,6 @@ Description:
         mp.Pw[ix, 1] = mp.Mw[ix] * mp.Vw[ix, 1] *            mp.porosity[ix]
         mp.Pw[ix, 2] = mp.Mw[ix] * mp.Vw[ix, 2] *            mp.porosity[ix]
         mp.Pw[ix, 3] = mp.Mw[ix] * mp.Vw[ix, 3] *            mp.porosity[ix]
-        # update CFL conditions
-        sqr = sqrt((Ks + G * T2(1.333333)) / mp.ρs[ix])
-        cd_sx = grid.space_x / (sqr + abs(Vs_1))
-        cd_sy = grid.space_y / (sqr + abs(Vs_2))
-        mp.cfl[ix] = min(cd_sx, cd_sy)
     end
 end
 

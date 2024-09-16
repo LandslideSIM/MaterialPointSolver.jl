@@ -43,7 +43,7 @@ This function will start to run the 2D MPM solver.
     Ti = T2(0.0)
     pc = Ref{T1}(0)
     pb = progressinfo(args, "solving")
-    args.time_step==:auto ? ΔT=cfl(args, grid, mp, pts_attr, Val(args.coupling)) : ΔT=args.ΔT
+    ΔT = args.time_step==:auto ? cfl(args, grid, mp, pts_attr, Val(args.coupling)) : args.ΔT
     dev_grid, dev_mp, dev_pts_attr, dev_bc = host2device(grid, mp, pts_attr, bc, Val(args.device))
     # main part: HDF5 ON / OFF
     if args.hdf5==true

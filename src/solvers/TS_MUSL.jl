@@ -25,7 +25,7 @@ function procedure!(args    ::MODELARGS,
     resetmpstatus_TS!(dev)(ndrange=mp.num, grid, mp, Val(args.basis))
     P2G_TS!(dev)(ndrange=mp.num, grid, mp, pts_attr, G)
     solvegrid_TS!(dev)(ndrange=grid.node_num, grid, bc, ΔT, args.ζs, args.ζw)
-    doublemapping1_TS!(dev)(ndrange=mp.num, grid, mp, pts_attr, ΔT, args.FLIP, args.PIC)
+    doublemapping1_TS!(dev)(ndrange=mp.num, grid, mp, ΔT, args.FLIP, args.PIC)
     doublemapping2_TS!(dev)(ndrange=mp.num, grid, mp)
     doublemapping3_TS!(dev)(ndrange=grid.node_num, grid, bc, ΔT)
     G2P_TS!(dev)(ndrange=mp.num, grid, mp, pts_attr, ΔT)
