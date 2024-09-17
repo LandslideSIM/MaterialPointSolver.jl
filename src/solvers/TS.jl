@@ -426,8 +426,8 @@ Description:
         # compute nodal velocity
         grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
         grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
-        grid.Vw[ix, 1] = grid.Pw[ix, 1] * Mi_denom
-        grid.Vw[ix, 2] = grid.Pw[ix, 2] * Mi_denom
+        grid.Vw[ix, 1] = grid.Pw[ix, 1] * Mw_denom
+        grid.Vw[ix, 2] = grid.Pw[ix, 2] * Mw_denom
         # compute damping force
         tmp_damp = -ζw * sqrt(grid.Fw[ix, 1] * grid.Fw[ix, 1] + 
                               grid.Fw[ix, 2] * grid.Fw[ix, 2])
@@ -488,9 +488,9 @@ Description:
         grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
         grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
         grid.Vs[ix, 3] = grid.Ps[ix, 3] * Ms_denom
-        grid.Vw[ix, 1] = grid.Pw[ix, 1] * Mi_denom
-        grid.Vw[ix, 2] = grid.Pw[ix, 2] * Mi_denom
-        grid.Vw[ix, 3] = grid.Pw[ix, 3] * Mi_denom
+        grid.Vw[ix, 1] = grid.Pw[ix, 1] * Mw_denom
+        grid.Vw[ix, 2] = grid.Pw[ix, 2] * Mw_denom
+        grid.Vw[ix, 3] = grid.Pw[ix, 3] * Mw_denom
         # compute damping force
         tmp_damp = -ζw * sqrt(grid.Fw[ix, 1] * grid.Fw[ix, 1] +
                               grid.Fw[ix, 2] * grid.Fw[ix, 2] +
@@ -729,11 +729,12 @@ Solve equations on grid.
     if ix ≤ grid.node_num 
         iszero(grid.Ms[ix]) ? Ms_denom = T2(0.0) : Ms_denom = T2(1.0) / grid.Ms[ix]
         iszero(grid.Mi[ix]) ? Mi_denom = T2(0.0) : Mi_denom = T2(1.0) / grid.Mi[ix]
+        iszero(grid.Mw[ix]) ? Mw_denom = T2(0.0) : Mw_denom = T2(1.0) / grid.Mw[ix]
         # compute nodal velocities
         grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
         grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
-        grid.Vw[ix, 1] = grid.Pw[ix, 1] * Mi_denom
-        grid.Vw[ix, 2] = grid.Pw[ix, 2] * Mi_denom
+        grid.Vw[ix, 1] = grid.Pw[ix, 1] * Mw_denom
+        grid.Vw[ix, 2] = grid.Pw[ix, 2] * Mw_denom
         # fixed Dirichlet nodes
         bc.Vx_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 1] = bc.Vx_s_Val[ix] : nothing
         bc.Vy_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 2] = bc.Vy_s_Val[ix] : nothing
@@ -763,13 +764,14 @@ Solve equations on grid.
     if ix ≤ grid.node_num
         iszero(grid.Ms[ix]) ? Ms_denom = T2(0.0) : Ms_denom = T2(1.0) / grid.Ms[ix]
         iszero(grid.Mi[ix]) ? Mi_denom = T2(0.0) : Mi_denom = T2(1.0) / grid.Mi[ix]
+        iszero(grid.Mw[ix]) ? Mw_denom = T2(0.0) : Mw_denom = T2(1.0) / grid.Mw[ix]
         # compute nodal velocities
         grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
         grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
         grid.Vs[ix, 3] = grid.Ps[ix, 3] * Ms_denom
-        grid.Vw[ix, 1] = grid.Pw[ix, 1] * Mi_denom
-        grid.Vw[ix, 2] = grid.Pw[ix, 2] * Mi_denom
-        grid.Vw[ix, 3] = grid.Pw[ix, 3] * Mi_denom
+        grid.Vw[ix, 1] = grid.Pw[ix, 1] * Mw_denom
+        grid.Vw[ix, 2] = grid.Pw[ix, 2] * Mw_denom
+        grid.Vw[ix, 3] = grid.Pw[ix, 3] * Mw_denom
         # fixed Dirichlet nodes
         bc.Vx_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 1] = bc.Vx_s_Val[ix] : nothing
         bc.Vy_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 2] = bc.Vy_s_Val[ix] : nothing
