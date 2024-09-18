@@ -440,8 +440,8 @@ Description:
         damp_s_x = tmp_damp * sign(grid.Vs[ix, 1])
         damp_s_y = tmp_damp * sign(grid.Vs[ix, 2])
         # compute node acceleration
-        grid.a_w[ix, 1] = Mw_denom * (grid.Fw[ix, 1] + damp_w_x - grid.Fdrag[ix, 1])
-        grid.a_w[ix, 2] = Mw_denom * (grid.Fw[ix, 2] + damp_w_y - grid.Fdrag[ix, 2])
+        grid.a_w[ix, 1] = Mw_denom * (grid.Fw[ix, 1] + damp_w_x + grid.Fdrag[ix, 1])
+        grid.a_w[ix, 2] = Mw_denom * (grid.Fw[ix, 2] + damp_w_y + grid.Fdrag[ix, 2])
         grid.a_s[ix, 1] = Ms_denom * (-grid.Mi[ix] * grid.a_w[ix, 1] + grid.Fs[ix, 1] + 
                                       damp_w_x + damp_s_x)
         grid.a_s[ix, 2] = Ms_denom * (-grid.Mi[ix] * grid.a_w[ix, 2] + grid.Fs[ix, 2] + 
@@ -508,9 +508,9 @@ Description:
         damp_s_y = tmp_damp * sign(grid.Vs[ix, 2])
         damp_s_z = tmp_damp * sign(grid.Vs[ix, 3])
         # compute node acceleration
-        grid.a_w[ix, 1] = Mw_denom * (grid.Fw[ix, 1] + damp_w_x - grid.Fdrag[ix, 1])
-        grid.a_w[ix, 2] = Mw_denom * (grid.Fw[ix, 2] + damp_w_y - grid.Fdrag[ix, 2])
-        grid.a_w[ix, 3] = Mw_denom * (grid.Fw[ix, 3] + damp_w_z - grid.Fdrag[ix, 3])
+        grid.a_w[ix, 1] = Mw_denom * (grid.Fw[ix, 1] + damp_w_x + grid.Fdrag[ix, 1])
+        grid.a_w[ix, 2] = Mw_denom * (grid.Fw[ix, 2] + damp_w_y + grid.Fdrag[ix, 2])
+        grid.a_w[ix, 3] = Mw_denom * (grid.Fw[ix, 3] + damp_w_z + grid.Fdrag[ix, 3])
         grid.a_s[ix, 1] = Ms_denom * (-grid.Mi[ix] * grid.a_w[ix, 1] + grid.Fs[ix, 1] + 
                                       damp_w_x + damp_s_x)
         grid.a_s[ix, 2] = Ms_denom * (-grid.Mi[ix] * grid.a_w[ix, 2] + grid.Fs[ix, 2] + 
