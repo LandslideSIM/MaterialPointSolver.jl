@@ -551,8 +551,8 @@ Description:
 2. Compute CFL conditions.
 """
 @kernel inbounds=true function doublemapping1_TS!(
-    grid    ::          KernelGrid2D{T1, T2},
-    mp      ::      KernelParticle2D{T1, T2},
+    grid    ::    KernelGrid2D{T1, T2},
+    mp      ::KernelParticle2D{T1, T2},
     ΔT      ::T2,
     FLIP    ::T2,
     PIC     ::T2
@@ -604,8 +604,8 @@ Description:
 2. Compute CFL conditions.
 """
 @kernel inbounds=true function doublemapping1_TS!(
-    grid    ::          KernelGrid3D{T1, T2},
-    mp      ::      KernelParticle3D{T1, T2},
+    grid    ::    KernelGrid3D{T1, T2},
+    mp      ::KernelParticle3D{T1, T2},
     ΔT      ::T2,
     FLIP    ::T2,
     PIC     ::T2
