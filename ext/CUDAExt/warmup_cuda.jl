@@ -11,7 +11,7 @@
 
 function warmup(::Val{:CUDA}; ID::Int=0)
     CUDA.device!(ID)
-    rtsdir = joinpath(homedir(), "MaterialPointSolverTEMP_$(ID)/")
+    rtsdir = joinpath(tempdir(), "MaterialPointSolverTEMP_$(ID)/")
     mkpath(rtsdir)
     init_grid_space_x = 1
     init_grid_space_y = 1

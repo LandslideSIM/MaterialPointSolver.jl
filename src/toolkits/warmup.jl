@@ -32,7 +32,7 @@ or
 > Note that on the GPU from AMD, the device id start from `1`.
 """
 function warmup(::Val{:CPU}; ID::Int=0)
-    rtsdir = joinpath(homedir(), "MaterialPointSolverTEMP_$(ID)/")
+    rtsdir = joinpath(tempdir(), "MaterialPointSolverTEMP_$(ID)/")
     mkpath(rtsdir)
     init_grid_space_x = 1
     init_grid_space_y = 1

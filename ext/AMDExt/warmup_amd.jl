@@ -12,7 +12,7 @@
 function warmup(::Val{:ROCm}; ID::Int=0)
     ID == 0 ? ID = 1 : nothing
     AMDGPU.device!(AMDGPU.devices()[ID])
-    rtsdir = joinpath(homedir(), "MaterialPointSolverTEMP_$(ID)/")
+    rtsdir = joinpath(tempdir(), "MaterialPointSolverTEMP_$(ID)/")
     mkpath(rtsdir)
     init_grid_space_x = 1
     init_grid_space_y = 1
