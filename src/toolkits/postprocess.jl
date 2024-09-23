@@ -115,7 +115,7 @@ Generates animation by using the data from HDF5 file (2D).
     )
     # generate files for particles
     paraview_collection(mps_path) do pvd
-        @inbounds Threads.@threads for i in 1:itr
+        @inbounds for i in 1:itr
             # read data from HDF5 file
             time   = fid["group$(i)/time"       ] |> read
             sig    = fid["group$(i)/sig"        ] |> read
@@ -191,7 +191,7 @@ Generates animation by using the data from HDF5 file (3D).
     )
     # generate files for particles
     paraview_collection(mps_path) do pvd
-        @inbounds Threads.@threads for i in 1:itr
+        @inbounds for i in 1:itr
             # read data from HDF5 file
             time   = fid["group$(i)/time"       ] |> read
             sig    = fid["group$(i)/sig"        ] |> read
