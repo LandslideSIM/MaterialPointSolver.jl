@@ -30,7 +30,7 @@ This function will setup the particle to node and particle to cell index for 2D 
     mp.p2c[ix] = unsafe_trunc(T1, 
         cld(mp.pos[ix, 2] - grid.range_y1, grid.space_y) +
         fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * grid.cell_num_y)
-    @KAunroll for iy in Int32(1):Int32(4)
+    @KAunroll for iy in Int32(1):Int32(mp.NIC)
         p2n = getP2N_linear(grid, mp.p2c[ix], iy)
         mp.p2n[ix, iy] = p2n
         # compute distance between particle and related nodes
@@ -65,7 +65,7 @@ This function will setup the particle to node and particle to cell index for 3D 
         fld(mp.pos[ix, 3] - grid.range_z1, grid.space_z) * 
             grid.cell_num_y * grid.cell_num_x +
         fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * grid.cell_num_y)
-    @KAunroll for iy in Int32(1):Int32(8)
+    @KAunroll for iy in Int32(1):Int32(mp.NIC)
         p2n = getP2N_linear(grid, mp.p2c[ix], iy)
         mp.p2n[ix, iy] = p2n
         # compute distance between particle and related nodes
@@ -100,7 +100,7 @@ This function will setup the particle to node and particle to cell index for 2D 
     mp.p2c[ix] = unsafe_trunc(T1,
         cld(mp.pos[ix, 2] - grid.range_y1, grid.space_y) +
         fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * grid.cell_num_y)
-    @KAunroll for iy in Int32(1):Int32(16)
+    @KAunroll for iy in Int32(1):Int32(mp.NIC)
         p2n = getP2N_uGIMP(grid, mp.p2c[ix], iy)
         mp.p2n[ix, iy] = p2n
         # compute distance between particle and related nodes
@@ -135,7 +135,7 @@ This function will setup the particle to node and particle to cell index for 3D 
         fld(mp.pos[ix, 3] - grid.range_z1, grid.space_z) * 
             grid.cell_num_y * grid.cell_num_x +
         fld(mp.pos[ix, 1] - grid.range_x1, grid.space_x) * grid.cell_num_y)
-    @KAunroll for iy in Int32(1):Int32(64)
+    @KAunroll for iy in Int32(1):Int32(mp.NIC)
         p2n = getP2N_uGIMP(grid, mp.p2c[ix], iy)
         mp.p2n[ix, iy] = p2n
         # compute distance betwe en particle and related nodes
