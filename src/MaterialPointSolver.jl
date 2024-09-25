@@ -10,7 +10,7 @@
 
 module MaterialPointSolver
 
-using Adapt, ArrayAllocators, BenchmarkTools, Dates, DelimitedFiles, HDF5, JSON3, 
+using Adapt, ArrayAllocators, BenchmarkTools, Dates, DelimitedFiles, JLD2, JSON3, 
       KernelAbstractions, Printf, ProgressMeter, StructTypes, SysInfo, WriteVTK # PrecompileTools
 
 import KernelAbstractions.synchronize as KAsync

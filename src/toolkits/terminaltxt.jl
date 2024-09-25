@@ -35,7 +35,7 @@ function info_print(args::MODELARGS, grid::GRID, mp::PARTICLE)
     flip = lpad(       @sprintf("%.2f", args.FLIP          ), text_place1)
     ζs   = lpad(       @sprintf("%.2f", args.ζs            ), text_place1)
     ζw   = lpad(       @sprintf("%.2f", args.ζw            ), text_place1)
-    hd   = lpad(string(                 args.hdf5          ), text_place1)
+    jd   = lpad(string(                 args.jld2          ), text_place1)
     ΔT   = lpad(                        ΔT                  , text_place2)
     Ttol = lpad(string(@sprintf("%.2e", args.Ttol    ), "s"), text_place2)
     pts  = lpad(string(@sprintf("%.2e", mp.num       ), " "), text_place2)
@@ -47,7 +47,7 @@ function info_print(args::MODELARGS, grid::GRID, mp::PARTICLE)
     Ttol: $(Ttol) │ FLIP: $(flip) │ coupling : $(args.coupling)
     pts : $(pts) │ ζs  : $(ζs) │ animation: $(args.animation)
     nds : $(nds) │ ζw  : $(ζw) │ precision: $(pc)
-    MVL : $(mvl) │ HDF5: $(hd) │ material : $(material)
+    MVL : $(mvl) │ JLD2: $(jd) │ material : $(material)
     ────────────────┴─────────────┴─────────────────
     """
     return nothing
@@ -132,7 +132,7 @@ Print the progress info.
 """
 function progressinfo(args::MODELARGS, words::String; dt=3.0)
     return Progress(100, dt=dt; desc="\e[1;36m[ Info:\e[0m $(lpad(words, 7))",
-        color=:white, barlen=12, barglyphs=BarGlyphs(" ◼◼  "), output=stderr, 
+        color=:white, barlen=12, barglyphs=BarGlyphs(" ━━  "), output=stderr, 
         enabled=args.progressbar)
 end
 

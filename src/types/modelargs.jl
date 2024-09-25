@@ -30,8 +30,8 @@ This struct is used to store the parameters of the solver, it is a mutable struc
 7. `constitutive`: constitutive model (:linearelastic/:hyperelastic/:druckerprager/:mohrcoulomb/:taitwater)
 8. `basis`       : basis function (:uGIMP/:linear)
 9. `animation`   : animation switch (true/false)
-10. `hdf5`       : HDF5 switch (true/false)
-11. `hdf5_step`  : HDF5 step (Int)
+10. `jld2`       : JLD2 switch (true/false)
+11. `jld2_step`  : JLD2 step (Int)
 12. `MVL`        : mitigate volume locking (true/false)
 13. `device`     : device (:CPU/:CUDA)
 14. `coupling`   : coupling mode (:OS/:TS)
@@ -56,8 +56,8 @@ This struct is used to store the parameters of the solver, it is a mutable struc
     const constitutive::Symbol
     const basis       ::Symbol
     const animation   ::Bool    = false
-    const hdf5        ::Bool    = false
-    const hdf5_step   ::T1      = T1(1)
+    const jld2        ::Bool    = false
+    const jld2_step   ::T1      = T1(1)
     const MVL         ::Bool    = false
     const device      ::Symbol  = :CPU
     const coupling    ::Symbol  = :OS
@@ -73,7 +73,7 @@ This struct is used to store the parameters of the solver, it is a mutable struc
     const project_name::String
     const project_path::String
     function Args2D{T1, T2}(Ttol, Te, ΔT, time_step, FLIP, PIC, constitutive, basis, 
-        animation, hdf5, hdf5_step, MVL, device, coupling, scheme, progressbar, gravity, ζs, 
+        animation, jld2, jld2_step, MVL, device, coupling, scheme, progressbar, gravity, ζs, 
         ζw, αT, iter_num, end_time, start_time, project_name, project_path) where {T1, T2}
         # project default value
         project_path = abspath(project_path)
@@ -95,11 +95,11 @@ This struct is used to store the parameters of the solver, it is a mutable struc
         coupling in cop_set     ? nothing : error("Coupling mode is wrong."                 )
         device in dev_set       ? nothing : error("Cannot find $(device) device."           )
         time_step in tis_set    ? nothing : error("$(time_step) time step is not allowed."  )
-        (animation==true)&&(hdf5==false) ? (hdf5=true; @warn "HDF5 forced ON due to the animation") : nothing
-        (hdf5==true)&&(hdf5_step≤0)  ? error("HDF5 step cannot be ≤0.") : nothing
+        (animation==true)&&(jld2==false) ? (jld2=true; @warn "JLD2 forced ON due to the animation") : nothing
+        (jld2==true)&&(jld2_step≤0)  ? error("JLD2 step cannot be ≤0.") : nothing
         # update struct
-        new(Ttol, Te, ΔT, time_step, FLIP, PIC, constitutive, basis, animation, hdf5, 
-            hdf5_step, MVL, device, coupling, scheme, progressbar, gravity, ζs, ζw, αT, 
+        new(Ttol, Te, ΔT, time_step, FLIP, PIC, constitutive, basis, animation, jld2, 
+            jld2_step, MVL, device, coupling, scheme, progressbar, gravity, ζs, ζw, αT, 
             iter_num, end_time, start_time, project_name, project_path)
     end
 end
@@ -121,8 +121,8 @@ Description:
     const constitutive::Symbol
     const basis       ::Symbol
     const animation   ::Bool    = false
-    const hdf5        ::Bool    = false
-    const hdf5_step   ::T1      = T1(1)
+    const jld2        ::Bool    = false
+    const jld2_step   ::T1      = T1(1)
     const MVL         ::Bool    = false
     const device      ::Symbol  = :CPU
     const coupling    ::Symbol  = :OS
@@ -138,7 +138,7 @@ Description:
     const project_name::String
     const project_path::String
     function Args3D{T1, T2}(Ttol, Te, ΔT, time_step, FLIP, PIC, constitutive, basis, 
-        animation, hdf5, hdf5_step, MVL, device, coupling, scheme, progressbar, gravity, ζs, 
+        animation, jld2, jld2_step, MVL, device, coupling, scheme, progressbar, gravity, ζs, 
         ζw, αT, iter_num, end_time, start_time, project_name, project_path) where {T1, T2}
         # project default value
         project_path = abspath(project_path)
@@ -160,11 +160,11 @@ Description:
         coupling in cop_set     ? nothing : error("Coupling mode is wrong."                 )
         device in dev_set       ? nothing : error("Cannot find $(device) device."           )
         time_step in tis_set    ? nothing : error("$(time_step) time step is not allowed."  )
-        (animation==true)&&(hdf5==false) ? (hdf5=true; @warn "HDF5 forced ON due to the animation") : nothing
-        (hdf5==true)&&(hdf5_step≤0)  ? error("HDF5 step cannot be ≤0.") : nothing
+        (animation==true)&&(jld2==false) ? (jld2=true; @warn "JLD2 forced ON due to the animation") : nothing
+        (jld2==true)&&(jld2_step≤0)  ? error("JLD2 step cannot be ≤0.") : nothing
         # update struct
-        new(Ttol, Te, ΔT, time_step, FLIP, PIC, constitutive, basis, animation, hdf5, 
-            hdf5_step, MVL, device, coupling, scheme, progressbar, gravity, ζs, ζw, αT, 
+        new(Ttol, Te, ΔT, time_step, FLIP, PIC, constitutive, basis, animation, jld2, 
+            jld2_step, MVL, device, coupling, scheme, progressbar, gravity, ζs, ζw, αT, 
             iter_num, end_time, start_time, project_name, project_path)
     end
 end
