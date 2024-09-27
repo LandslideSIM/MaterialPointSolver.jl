@@ -1,38 +1,52 @@
 #==========================================================================================+
 |           MaterialPointSolver.jl: High-performance MPM Solver for Geomechanics           |
 +------------------------------------------------------------------------------------------+
-|  File Name  : OS.jl                                                                      |
-|  Description: Basic computing functions for one-phase single-point MPM                   |
+|  File Name  : utils_OS.jl                                                                |
+|  Description: Basic computing functions for one-phase single-point MPM, and these        |
+|               functions are mainly used for MUSL update scheme.                          |
 |  Programmer : Zenan Huo                                                                  |
 |  Start Date : 01/01/2022                                                                 |
 |  Affiliation: Risk Group, UNIL-ISTE                                                      |
-|  Functions  : 01. resetgridstatus_OS! [2D]                                               |
-|               02. resetgridstatus_OS! [3D]                                               |
-|               03. resetmpstatus_OS!   [2D, linear basis]                                 |
-|               04. resetmpstatus_OS!   [3D, linear basis]                                 |
-|               05. resetmpstatus_OS!   [2D,  uGIMP basis]                                 |
-|               06. resetmpstatus_OS!   [3D,  uGIMP basis]                                 |
-|               07. P2G_OS!             [2D]                                               |
-|               08. P2G_OS!             [3D]                                               |
-|               09. solvegrid_OS!       [2D]                                               |
-|               10. solvegrid_OS!       [3D]                                               |
-|               11. doublemapping1_OS!  [2D]                                               |
-|               12. doublemapping1_OS!  [3D]                                               |
-|               13. doublemapping2_OS!  [2D]                                               |
-|               14. doublemapping2_OS!  [3D]                                               |
-|               15. doublemapping3_OS!  [2D]                                               |
-|               16. doublemapping3_OS!  [3D]                                               |
-|               17. G2P_OS!             [2D]                                               |
-|               18. G2P_OS!             [3D]                                               |
-|               19. vollock1_OS!        [2D]                                               |
-|               20. vollock1_OS!        [3D]                                               |
-|               21. vollock2_OS!        [2D]                                               |
-|               22. vollock2_OS!        [3D]                                               |
+|  Functions  : 01. resetgridstatus_OS!     [2D]                                           |
+|               02. resetgridstatus_OS!     [3D]                                           |
+|               03. resetmpstatus_OS!       [2D, linear basis]                             |
+|               04. resetmpstatus_OS!       [3D, linear basis]                             |
+|               05. resetmpstatus_OS!       [2D,  uGIMP basis]                             |
+|               06. resetmpstatus_OS_CPU!   [2D,  uGIMP basis]                             |
+|               07. resetmpstatus_OS!       [3D,  uGIMP basis]                             |
+|               08. resetmpstatus_OS_CPU!   [3D,  uGIMP basis]                             |
+|               09. P2G_OS!                 [2D]                                           |
+|               10. P2G_OS!                 [3D]                                           |
+|               11. solvegrid_OS!           [2D]                                           |
+|               12. solvegrid_a_OS!         [2D, acceleration]                             |
+|               13. solvegrid_OS!           [3D]                                           |
+|               14. solvegrid_a_OS!         [3D, acceleration]                             |
+|               15. doublemapping1_OS!      [2D]                                           |
+|               16. doublemapping1_a_OS!    [2D]                                           |
+|               17. doublemapping1_OS!      [3D]                                           |
+|               18. doublemapping1_a_OS!    [3D]                                           |
+|               19. doublemapping2_OS!      [2D]                                           |
+|               20. doublemapping2_OS!      [3D]                                           |
+|               21. doublemapping3_OS!      [2D]                                           |
+|               22. doublemapping3_OS!      [3D]                                           |
+|               23. G2P_OS!                 [2D]                                           |
+|               24. G2P_OS!                 [3D]                                           |
+|               25. vollock1_OS!            [2D]                                           |
+|               26. vollock1_OS!            [3D]                                           |
+|               27. vollock2_OS!            [2D]                                           |
+|               28. vollock2_OS!            [3D]                                           |
 +==========================================================================================#
 
-export resetgridstatus_OS!, resetmpstatus_OS!, resetmpstatus_OS_CPU!, P2G_OS!, 
-    solvegrid_OS!, doublemapping1_OS!, doublemapping2_OS!, doublemapping3_OS!, G2P_OS!, 
-    vollock1_OS!, vollock2_OS!
+export resetgridstatus_OS!
+export resetmpstatus_OS!, resetmpstatus_OS_CPU!
+export P2G_OS! 
+export solvegrid_OS!, solvegrid_a_OS!
+export doublemapping1_OS!, doublemapping1_a_OS!
+export doublemapping2_OS!
+export doublemapping3_OS!
+export G2P_OS! 
+export vollock1_OS!
+export vollock2_OS!
 
 """
     resetgridstatus_OS!(grid::KernelGrid2D{T1, T2})
@@ -452,7 +466,7 @@ Description:
 ) where {T1, T2}
     ix = @index(Global)
     if ix ≤ grid.node_num
-        iszero(grid.Ms[ix]) ? Ms_denom = T2(0.0) : Ms_denom = T2(1.0) / grid.Ms[ix]
+        Ms_denom = grid.Ms[ix] < eps(T2) ? T2(0.0) : inv(grid.Ms[ix])
         # compute nodal velocity
         grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
         grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
@@ -475,6 +489,111 @@ Description:
 end
 
 """
+    solvegrid_a_OS!(grid::KernelGrid2D{T1, T2}, bc::KernelBoundary2D{T1, T2}, ΔT::T2, 
+        ζs::T2)
+
+Description:
+---
+1. Solve equations on grid.
+2. Add boundary condition.
+3. Update particle velocity based on the acceleration.
+"""
+@kernel inbounds=true function solvegrid_a_OS!(
+    grid::    KernelGrid2D{T1, T2},
+    bc  ::KernelBoundary2D{T1, T2},
+    ΔT  ::T2,
+    ζs  ::T2
+) where {T1, T2}
+    ix = @index(Global)
+    if ix ≤ grid.node_num
+        Ms_denom = grid.Ms[ix] < eps(T2) ? T2(0.0) : inv(grid.Ms[ix])
+        # boundary condition
+        bc.Vx_s_Idx[ix] ≠ T1(0) ? grid.Ps[ix, 1] = bc.Vx_s_Val[ix] : nothing
+        bc.Vy_s_Idx[ix] ≠ T1(0) ? grid.Ps[ix, 2] = bc.Vy_s_Val[ix] : nothing
+        # compute nodal velocity
+        grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
+        grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
+        # damping force for solid
+        dampvs = -ζs * sqrt(grid.Fs[ix, 1] * grid.Fs[ix, 1] + 
+                            grid.Fs[ix, 2] * grid.Fs[ix, 2])
+        # compute nodal total force for mixture
+        Fs_x = grid.Fs[ix, 1] + dampvs * sign(grid.Vs[ix, 1])
+        Fs_y = grid.Fs[ix, 2] + dampvs * sign(grid.Vs[ix, 2])
+        # update nodal velocity
+        grid.Vs[ix, 1] += Fs_x * ΔT * Ms_denom
+        grid.Vs[ix, 2] += Fs_y * ΔT * Ms_denom
+        # update nodal acceleration
+        grid.a_s[ix, 1] = Fs_x * Ms_denom
+        grid.a_s[ix, 2] = Fs_y * Ms_denom
+        # boundary condition
+        bc.Vx_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 1] = bc.Vx_s_Val[ix] : nothing
+        bc.Vy_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 2] = bc.Vy_s_Val[ix] : nothing
+        bc.Vx_s_Idx[ix] ≠ T1(0) ? grid.a_s[ix, 1] = bc.Vx_s_Val[ix] : nothing
+        bc.Vy_s_Idx[ix] ≠ T1(0) ? grid.a_s[ix, 2] = bc.Vy_s_Val[ix] : nothing
+        # reset grid momentum
+        grid.Ps[ix, 1] = T2(0.0)
+        grid.Ps[ix, 2] = T2(0.0)
+    end
+end
+
+"""
+    solvegrid_a_OS!(grid::KernelGrid3D{T1, T2}, bc::KernelBoundary3D{T1, T2}, ΔT::T2, 
+        ζs::T2)
+
+Description:
+---
+1. Solve equations on grid.
+2. Add boundary condition.
+3. Update particle velocity based on the acceleration.
+"""
+@kernel inbounds=true function solvegrid_a_OS!(
+    grid::    KernelGrid3D{T1, T2},
+    bc  ::KernelBoundary3D{T1, T2},
+    ΔT  ::T2,
+    ζs  ::T2
+) where {T1, T2}
+    ix = @index(Global)
+    if ix ≤ grid.node_num
+        Ms_denom = grid.Ms[ix] < eps(T2) ? T2(0.0) : inv(grid.Ms[ix])
+        # boundary condition
+        bc.Vx_s_Idx[ix] ≠ T1(0) ? grid.Ps[ix, 1] = bc.Vx_s_Val[ix] : nothing
+        bc.Vy_s_Idx[ix] ≠ T1(0) ? grid.Ps[ix, 2] = bc.Vy_s_Val[ix] : nothing
+        bc.Vz_s_Idx[ix] ≠ T1(0) ? grid.Ps[ix, 3] = bc.Vz_s_Val[ix] : nothing
+        # compute nodal velocity
+        grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
+        grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
+        grid.Vs[ix, 3] = grid.Ps[ix, 3] * Ms_denom
+        # damping force for solid
+        dampvs = -ζs * sqrt(grid.Fs[ix, 1] * grid.Fs[ix, 1] + 
+                            grid.Fs[ix, 2] * grid.Fs[ix, 2] + 
+                            grid.Fs[ix, 3] * grid.Fs[ix, 3])
+        # compute nodal total force for mixture
+        Fs_x = grid.Fs[ix, 1] + dampvs * sign(grid.Vs[ix, 1])
+        Fs_y = grid.Fs[ix, 2] + dampvs * sign(grid.Vs[ix, 2])
+        Fs_z = grid.Fs[ix, 3] + dampvs * sign(grid.Vs[ix, 3])
+        # update nodal velocity
+        grid.Vs[ix, 1] += Fs_x * ΔT * Ms_denom
+        grid.Vs[ix, 2] += Fs_y * ΔT * Ms_denom
+        grid.Vs[ix, 3] += Fs_z * ΔT * Ms_denom
+        # update nodal acceleration
+        grid.a_s[ix, 1] = Fs_x * Ms_denom
+        grid.a_s[ix, 2] = Fs_y * Ms_denom
+        grid.a_s[ix, 3] = Fs_z * Ms_denom
+        # boundary condition
+        bc.Vx_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 1] = bc.Vx_s_Val[ix] : nothing
+        bc.Vy_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 2] = bc.Vy_s_Val[ix] : nothing
+        bc.Vz_s_Idx[ix] ≠ T1(0) ? grid.Vs[ix, 3] = bc.Vz_s_Val[ix] : nothing
+        bc.Vx_s_Idx[ix] ≠ T1(0) ? grid.a_s[ix, 1] = bc.Vx_s_Val[ix] : nothing
+        bc.Vy_s_Idx[ix] ≠ T1(0) ? grid.a_s[ix, 2] = bc.Vy_s_Val[ix] : nothing
+        bc.Vz_s_Idx[ix] ≠ T1(0) ? grid.a_s[ix, 3] = bc.Vz_s_Val[ix] : nothing
+        # reset grid momentum
+        grid.Ps[ix, 1] = T2(0.0)
+        grid.Ps[ix, 2] = T2(0.0)
+        grid.Ps[ix, 3] = T2(0.0)
+    end
+end
+
+"""
     solvegrid_OS!(grid::KernelGrid3D{T1, T2}, bc::KernelBoundary3D{T1, T2}, ΔT::T2, ζs::T2)
 
 Description:
@@ -490,7 +609,7 @@ Description:
 ) where {T1, T2}
     ix = @index(Global)
     if ix ≤ grid.node_num
-        iszero(grid.Ms[ix]) ? Ms_denom = T2(0.0) : Ms_denom = T2(1.0) / grid.Ms[ix]
+        Ms_denom = grid.Ms[ix] < eps(T2) ? Ms_denom=T2(0.0) : inv(grid.Ms[ix])
         # compute nodal velocity
         Ps_1 = grid.Ps[ix, 1]
         Ps_2 = grid.Ps[ix, 2]
@@ -577,6 +696,47 @@ Description:
     end
 end
 
+@kernel inbounds = true function doublemapping1_a_OS!(
+    grid    ::          KernelGrid2D{T1, T2},
+    mp      ::      KernelParticle2D{T1, T2},
+    pts_attr::KernelParticleProperty{T1, T2},
+    ΔT      ::T2
+) where {T1, T2}
+    # 4/3 = 1.333333
+    ix = @index(Global)
+    # update particle position & velocity
+    if ix ≤ mp.num
+        pid = pts_attr.layer[ix]
+        Ks  = pts_attr.Ks[pid]
+        G   = pts_attr.G[pid]
+        tmp_vx = tmp_vy = tmp_px = tmp_py = T2(0.0)
+        # update particle position
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
+            Ni = mp.Ni[ix, iy]
+            if Ni ≠ T2(0.0)
+                p2n = mp.p2n[ix, iy]
+                tmp_px += Ni * grid.Vs[p2n, 1]
+                tmp_py += Ni * grid.Vs[p2n, 2]
+                tmp_vx += Ni * grid.a_s[p2n, 1]
+                tmp_vy += Ni * grid.a_s[p2n, 2]
+            end
+        end
+        mp.pos[ix, 1] += tmp_px * ΔT
+        mp.pos[ix, 2] += tmp_py * ΔT
+        # update particle velocity
+        mp.Vs[ix, 1] += tmp_vx * ΔT
+        mp.Vs[ix, 2] += tmp_vy * ΔT
+        # update particle momentum
+        mp.Ps[ix, 1] = mp.Ms[ix] * mp.Vs[ix, 1]
+        mp.Ps[ix, 2] = mp.Ms[ix] * mp.Vs[ix, 2]
+        # update CFL conditions
+        sqr = sqrt((Ks + G * T2(1.333333)) / mp.ρs[ix]) # 4/3 ≈ 1.333333
+        cd_sx = grid.space_x / (sqr + abs(mp.Vs[ix, 1]))
+        cd_sy = grid.space_y / (sqr + abs(mp.Vs[ix, 2]))
+        mp.cfl[ix] = min(cd_sx, cd_sy)
+    end
+end
+
 """
     doublemapping1_OS!(grid::KernelGrid3D{T1, T2}, mp::KernelParticle3D{T1, T2}, 
         pts_attr::KernelParticleProperty{T1, T2}, ΔT::T2, FLIP::T2, PIC::T2)
@@ -630,6 +790,53 @@ Description:
         mp.Vs[ix, 1] = FLIP * (mp.Vs[ix, 1] + tmp_vx_s1) + PIC * tmp_vx_s2
         mp.Vs[ix, 2] = FLIP * (mp.Vs[ix, 2] + tmp_vy_s1) + PIC * tmp_vy_s2
         mp.Vs[ix, 3] = FLIP * (mp.Vs[ix, 3] + tmp_vz_s1) + PIC * tmp_vz_s2
+        # update particle momentum
+        mp.Ps[ix, 1] = mp.Ms[ix] * mp.Vs[ix, 1]
+        mp.Ps[ix, 2] = mp.Ms[ix] * mp.Vs[ix, 2]
+        mp.Ps[ix, 3] = mp.Ms[ix] * mp.Vs[ix, 3]
+        # update CFL conditions
+        sqr = sqrt((Ks + G * T2(1.333333)) / mp.ρs[ix])
+        cd_sx = grid.space_x / (sqr + abs(mp.Vs[ix, 1]))
+        cd_sy = grid.space_y / (sqr + abs(mp.Vs[ix, 2]))
+        cd_sz = grid.space_z / (sqr + abs(mp.Vs[ix, 3]))
+        mp.cfl[ix] = min(cd_sx, cd_sy, cd_sz)
+    end
+end
+
+@kernel inbounds = true function doublemapping1_a_OS!(
+    grid    ::          KernelGrid3D{T1, T2},
+    mp      ::      KernelParticle3D{T1, T2},
+    pts_attr::KernelParticleProperty{T1, T2},
+    ΔT      ::T2
+) where {T1, T2}
+    # 4/3 = 1.333333
+    ix = @index(Global)
+    # update particle position & velocity
+    if ix ≤ mp.num
+        pid = pts_attr.layer[ix]
+        Ks  = pts_attr.Ks[pid]
+        G   = pts_attr.G[pid]
+        tmp_vx = tmp_vy = tmp_vz = tmp_px = tmp_py = tmp_pz = T2(0.0)
+        # update particle position
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
+            Ni = mp.Ni[ix, iy]
+            if Ni ≠ T2(0.0)
+                p2n = mp.p2n[ix, iy]
+                tmp_px += Ni * grid.Vs[p2n, 1]
+                tmp_py += Ni * grid.Vs[p2n, 2]
+                tmp_pz += Ni * grid.Vs[p2n, 3]
+                tmp_vx += Ni * grid.a_s[p2n, 1]
+                tmp_vy += Ni * grid.a_s[p2n, 2]
+                tmp_vz += Ni * grid.a_s[p2n, 3]
+            end
+        end
+        mp.pos[ix, 1] += tmp_px * ΔT
+        mp.pos[ix, 2] += tmp_py * ΔT
+        mp.pos[ix, 3] += tmp_pz * ΔT
+        # update particle velocity
+        mp.Vs[ix, 1] += tmp_vx * ΔT
+        mp.Vs[ix, 2] += tmp_vy * ΔT
+        mp.Vs[ix, 3] += tmp_vz * ΔT
         # update particle momentum
         mp.Ps[ix, 1] = mp.Ms[ix] * mp.Vs[ix, 1]
         mp.Ps[ix, 2] = mp.Ms[ix] * mp.Vs[ix, 2]
@@ -708,7 +915,7 @@ Solve equations on grid.
 ) where {T1, T2}
     ix = @index(Global)
     if ix ≤ grid.node_num
-        iszero(grid.Ms[ix]) ? Ms_denom = T2(0.0) : Ms_denom = T2(1.0) / grid.Ms[ix]
+        Ms_denom = grid.Ms[ix] < eps(T2) ? Ms_denom=T2(0.0) : inv(grid.Ms[ix])
         # compute nodal velocities
         grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
         grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom
@@ -735,7 +942,7 @@ Solve equations on grid.
 ) where {T1, T2}
     ix = @index(Global)
     if ix ≤ grid.node_num
-        iszero(grid.Ms[ix]) ? Ms_denom = T2(0.0) : Ms_denom = T2(1.0) / grid.Ms[ix]
+        Ms_denom = grid.Ms[ix] < eps(T2) ? Ms_denom=T2(0.0) : inv(grid.Ms[ix])
         # compute nodal velocities
         grid.Vs[ix, 1] = grid.Ps[ix, 1] * Ms_denom
         grid.Vs[ix, 2] = grid.Ps[ix, 2] * Ms_denom

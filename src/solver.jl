@@ -9,18 +9,20 @@
 |  Functions  : 1. solver!() [2D & 3D]                                                     |
 +==========================================================================================#
 
-include(joinpath(@__DIR__, "solvers/utils.jl"  ))
-include(joinpath(@__DIR__, "solvers/OS.jl"     ))
-include(joinpath(@__DIR__, "solvers/TS.jl"     ))
-include(joinpath(@__DIR__, "solvers/OS_MUSL.jl"))
-include(joinpath(@__DIR__, "solvers/OS_USL.jl" ))
-include(joinpath(@__DIR__, "solvers/OS_USF.jl" ))
-include(joinpath(@__DIR__, "solvers/TS_MUSL.jl"))
+include(joinpath(@__DIR__, "solvers/extras.jl"  ))
+include(joinpath(@__DIR__, "solvers/utils_OS.jl"))
+include(joinpath(@__DIR__, "solvers/utils_TS.jl"))
+include(joinpath(@__DIR__, "solvers/OS_MUSL.jl" ))
+include(joinpath(@__DIR__, "solvers/OS_USL.jl"  ))
+include(joinpath(@__DIR__, "solvers/OS_USF.jl"  ))
+include(joinpath(@__DIR__, "solvers/TS_MUSL.jl" ))
 
 include(joinpath(@__DIR__, "materials/linearelastic.jl"))
 include(joinpath(@__DIR__, "materials/druckerprager.jl"))
 include(joinpath(@__DIR__, "materials/mohrcoulomb.jl"  ))
 include(joinpath(@__DIR__, "materials/hyperelastic.jl" ))
+
+export procedure!
 
 """
     submit_work!(args::Args2D{T1, T2}, grid::Grid2D{T1, T2}, mp::Particle2D{T1, T2}, 
@@ -76,7 +78,7 @@ This function will start to run the 2D MPM solver.
                     hdf5_switch = T1(0); hdf5_id += T1(1)
                 end
                 workflow(args, dev_grid, dev_mp, dev_pts_attr, dev_bc, ΔT, Ti, 
-                    Val(args.coupling), Val(args.scheme))
+                    Val(args.coupling), Val(args.scheme), Val(args.va))
                 args.time_step==:auto ? ΔT=args.αT*reduce(min, dev_mp.cfl) : nothing
                 Ti += ΔT
                 hdf5_switch += 1
@@ -111,7 +113,7 @@ This function will start to run the 2D MPM solver.
         args.start_time = time()
         while Ti < args.Ttol
             workflow(args, dev_grid, dev_mp, dev_pts_attr, dev_bc, ΔT, Ti, 
-                Val(args.coupling), Val(args.scheme))
+                Val(args.coupling), Val(args.scheme), Val(args.va))
             args.time_step==:auto ? ΔT=args.αT*reduce(min, dev_mp.cfl) : nothing
             Ti += ΔT
             args.iter_num += 1
