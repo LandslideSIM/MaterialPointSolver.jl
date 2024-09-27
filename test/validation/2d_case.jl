@@ -17,10 +17,10 @@ warmup(Val(:CUDA))
 
 include(joinpath(@__DIR__, "funcs.jl"))
 
-init_grid_space_x = 0.00125
-init_grid_space_y = 0.00125
-init_grid_range_x = [-0.1, 0.82]
-init_grid_range_y = [-0.1, 0.12]
+init_grid_space_x = 0.0025
+init_grid_space_y = 0.0025
+init_grid_range_x = [-0.025, 0.82]
+init_grid_range_y = [-0.025, 0.12]
 init_mp_in_space  = 2
 init_project_name = "2d_case"
 init_project_path = joinpath(@__DIR__, init_project_name)
@@ -43,7 +43,7 @@ init_ψ            = 0
 init_NIC          = 16
 init_basis        = :uGIMP
 init_phase        = 1
-init_scheme       = :USF
+init_scheme       = :MUSL
 iInt              = Int64
 iFloat            = Float64
 
@@ -120,7 +120,7 @@ bc = VBoundary2D{iInt, iFloat}(
 )
 
 # MPM solver
-materialpointsolver!(args, grid, mp, pts_attr, bc, workflow=testprocedure!)
+materialpointsolver!(args, grid, mp, pts_attr, bc)
 
 let 
     figregular = MaterialPointSolver.tnr

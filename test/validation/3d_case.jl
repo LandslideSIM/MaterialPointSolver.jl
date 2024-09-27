@@ -26,7 +26,7 @@ init_grid_space_x = 0.0025
 init_grid_space_y = 0.0025
 init_grid_space_z = 0.0025
 init_grid_range_x = [-0.02, 0.07]
-init_grid_range_y = [-0.02, 0.55]
+init_grid_range_y = [-0.02, 0.75]
 init_grid_range_z = [-0.02, 0.12]
 init_mp_in_space  = 2
 init_project_name = "3d_case"
@@ -50,7 +50,7 @@ init_ψ            = 0
 init_basis        = :uGIMP
 init_phase        = 1
 init_NIC          = 64
-init_scheme       = :USF
+init_scheme       = :MUSL
 iInt              = Int64
 iFloat            = Float64
 
@@ -67,7 +67,7 @@ args = Args3D{iInt, iFloat}(
     project_name = init_project_name,
     project_path = init_project_path,
     constitutive = init_constitutive,
-    animation    = true,
+    animation    = false,
     hdf5         = false,
     hdf5_step    = init_step,
     MVL          = true,
@@ -139,7 +139,7 @@ bc = VBoundary3D{iInt, iFloat}(
 )
 
 # MPM solver
-materialpointsolver!(args, grid, mp, pts_attr, bc, workflow=testprocedure!)
+materialpointsolver!(args, grid, mp, pts_attr, bc)
 
 let
     figfont = MaterialPointSolver.tnr
