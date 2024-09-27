@@ -37,11 +37,6 @@ This struct will save the material properties for material particle.
     Hp   ::Array{T2, 1} = [0] # softening modulus
     tmp1 ::T1           = T1(0)
     tmp2 ::T2           = T2(0)
-    function ParticleProperty{T1, T2}(layer, ν, E, G, Ks, Kw, k, σt, ϕ, ψ, c, cr, Hp, tmp1, 
-        tmp2) where {T1, T2}
-        minimum(layer) == 1 ? nothing : error("Wrong layer index.")
-        new(layer, ν, E, G, Ks, Kw, k, σt, ϕ, ψ, c, cr, Hp, tmp1, tmp2)
-    end
 end
 
 """

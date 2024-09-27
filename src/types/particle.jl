@@ -65,10 +65,11 @@ This struct will save the values for 2D material particle.
     ΔFs     ::Array{T2, 2} = [0 0]
     ΔFw     ::Array{T2, 2} = [0 0]
     F       ::Array{T2, 2} = [0 0]
+    dϵ      ::Array{T2, 1} = [0]
     function Particle2D{T1, T2}(num, phase, NIC, space_x, space_y, p2c, p2n, pos, σm, J, 
         epII, epK, vol, vol_init, Ms, Mw, Mi, porosity, cfl, ρs, ρs_init, ρw, ρw_init, init, 
         σw, σij, ϵij_s, ϵij_w, Δϵij_s, Δϵij_w, sij, Vs, Vw, Ps, Pw, Ni, ∂Nx, ∂Ny, ΔFs, ΔFw, 
-        F) where {T1, T2}
+        F, dϵ) where {T1, T2}
         # necessary input check
         DoF = 2
         NIC==4||NIC==16       ? nothing : error("Nodes in Cell can only be 4 or 16.")
@@ -91,6 +92,7 @@ This struct will save the values for 2D material particle.
         Mi       = Array{T1, 1}(calloc, num_new         )
         epII     = Array{T2, 1}(calloc, num             )
         epK      = Array{T2, 1}(calloc, num             )
+        dϵ       = Array{T2, 1}(calloc, num             )
         σw       = Array{T2, 1}(calloc, num_new         )
         σm       = Array{T2, 1}(calloc, num             )
         cfl      = Array{T2, 1}(calloc, num             )
@@ -113,7 +115,8 @@ This struct will save the values for 2D material particle.
         # update struct
         new(num, phase, NIC, space_x, space_y, p2c, p2n, pos, σm, J, epII, epK, vol, 
             vol_init, Ms, Mw, Mi, porosity, cfl, ρs, ρs_init, ρw, ρw_init, init, σw, σij, 
-            ϵij_s, ϵij_w, Δϵij_s, Δϵij_w, sij, Vs, Vw, Ps, Pw, Ni, ∂Nx, ∂Ny, ΔFs, ΔFw, F)
+            ϵij_s, ϵij_w, Δϵij_s, Δϵij_w, sij, Vs, Vw, Ps, Pw, Ni, ∂Nx, ∂Ny, ΔFs, ΔFw, F, 
+            dϵ)
     end
 end
 
@@ -172,6 +175,7 @@ struct GPUParticle2D{T1, T2, T3<:AbstractArray,
     ΔFs     ::T6
     ΔFw     ::T6
     F       ::T6
+    dϵ      ::T5
 end
 
 """
@@ -225,10 +229,11 @@ This struct will save the values for 3D material particle.
     ΔFs     ::Array{T2, 2} = [0 0]
     ΔFw     ::Array{T2, 2} = [0 0]
     F       ::Array{T2, 2} = [0 0]
+    dϵ      ::Array{T2, 1} = [0]
     function Particle3D{T1, T2}(num, phase, NIC, space_x, space_y, space_z, p2c, p2n, pos, 
         σm, J, epII, epK, vol, vol_init, Ms, Mw, Mi, porosity, cfl, ρs, ρs_init, ρw, 
         ρw_init, init, σw, σij, ϵij_s, ϵij_w, Δϵij_s, Δϵij_w, sij, Vs, Vw, Ps, Pw, Ni, ∂Nx, 
-        ∂Ny, ∂Nz, ΔFs, ΔFw, F) where {T1, T2}
+        ∂Ny, ∂Nz, ΔFs, ΔFw, F, dϵ) where {T1, T2}
         # necessary input check
         DoF = 3
         NIC==8||NIC==64 ? nothing : error("Nodes in Cell can only be 8 or 64." )
@@ -252,6 +257,7 @@ This struct will save the values for 3D material particle.
         Mi       = Array{T1, 1}(calloc, num_new         )
         epII     = Array{T2, 1}(calloc, num             )
         epK      = Array{T2, 1}(calloc, num             )
+        dϵ       = Array{T2, 1}(calloc, num             )
         σw       = Array{T2, 1}(calloc, num_new         )
         σm       = Array{T2, 1}(calloc, num             )
         cfl      = Array{T2, 1}(calloc, num             )
@@ -276,7 +282,7 @@ This struct will save the values for 3D material particle.
         new(num, phase, NIC, space_x, space_y, space_z, p2c, p2n, pos, σm, J, epII, epK, 
             vol, vol_init, Ms, Mw, Mi, porosity, cfl, ρs, ρs_init, ρw, ρw_init, init, σw, 
             σij, ϵij_s, ϵij_w, Δϵij_s, Δϵij_w, sij, Vs, Vw, Ps, Pw, Ni, ∂Nx, ∂Ny, ∂Nz, ΔFs, 
-            ΔFw, F)
+            ΔFw, F, dϵ)
     end
 end
 
@@ -337,6 +343,7 @@ struct GPUParticle3D{T1, T2, T3<:AbstractArray,
     ΔFs     ::T6
     ΔFw     ::T6
     F       ::T6
+    dϵ      ::T5
 end
 
 function Base.show(io::IO, mp::PARTICLE)

@@ -2,7 +2,7 @@
 |           MaterialPointSolver.jl: High-performance MPM Solver for Geomechanics           |
 +------------------------------------------------------------------------------------------+
 |  File Name  : TS_MUSL.jl                                                                 |
-|  Description: Defaule MUSL (modified update stress last) implementation for two-phase    |
+|  Description: Defaule MUSL (modified update stress last) implementation for one-phase    |
 |               single-point MPM                                                           |
 |  Programmer : Zenan Huo                                                                  |
 |  Start Date : 01/01/2022                                                                 |
@@ -19,34 +19,34 @@ function procedure!(args    ::MODELARGS,
                     Ti      ::T2,
                             ::Val{:TS},
                             ::Val{:MUSL}) where {T2}
-    Ti<args.Te ? G=args.gravity/args.Te*Ti : G=args.gravity
-    dev = getBackend(args)
+    Ti < args.Te ? G = args.gravity / args.Te * Ti : G = args.gravity
+    dev = getBackend(Val(args.device))
     resetgridstatus_TS!(dev)(ndrange=grid.node_num, grid)
     resetmpstatus_TS!(dev)(ndrange=mp.num, grid, mp, Val(args.basis))
     P2G_TS!(dev)(ndrange=mp.num, grid, mp, pts_attr, G)
-    solvegrid_TS!(dev)(ndrange=grid.node_num, grid, bc, ΔT, args.ζ)
-    doublemapping1_TS!(dev)(ndrange=mp.num, grid, mp, pts_attr, ΔT, args.FLIP, args.PIC)
+    solvegrid_TS!(dev)(ndrange=grid.node_num, grid, bc, ΔT, args.ζs, args.ζw)
+    doublemapping1_TS!(dev)(ndrange=mp.num, grid, mp, ΔT, args.FLIP, args.PIC)
     doublemapping2_TS!(dev)(ndrange=mp.num, grid, mp)
     doublemapping3_TS!(dev)(ndrange=grid.node_num, grid, bc, ΔT)
-    G2P_TS!(dev)(ndrange=mp.num, grid, mp, pts_attr)
+    G2P_TS!(dev)(ndrange=mp.num, grid, mp, pts_attr, ΔT)
     if args.constitutive==:hyperelastic
         hyE!(dev)(ndrange=mp.num, mp, pts_attr)
     elseif args.constitutive==:linearelastic
         liE!(dev)(ndrange=mp.num, mp, pts_attr)
     elseif args.constitutive==:druckerprager
         liE!(dev)(ndrange=mp.num, mp, pts_attr)
-        if Ti≥args.Te
+        if Ti ≥ args.Te
             dpP!(dev)(ndrange=mp.num, mp, pts_attr)
         end
     elseif args.constitutive==:mohrcoulomb
         liE!(dev)(ndrange=mp.num, mp, pts_attr)
-        if Ti≥args.Te
+        if Ti ≥ args.Te
             mcP!(dev)(ndrange=mp.num, mp, pts_attr)
         end
     end
-    if args.vollock==true
+    if args.MVL == true
         vollock1_TS!(dev)(ndrange=mp.num, grid, mp)
         vollock2_TS!(dev)(ndrange=mp.num, grid, mp)
-    end                                  
+    end
     return nothing
 end

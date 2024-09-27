@@ -1,7 +1,7 @@
 #==========================================================================================+
 |           MaterialPointSolver.jl: High-performance MPM Solver for Geomechanics           |
 +------------------------------------------------------------------------------------------+
-|  File Name  : randomfield.jl                                                             |
+|  File Name  : randomfield_cuda.jl                                                        |
 |  Description: Gaussian Random Field with 1) Gaussian covariance generation and           |
 |               2) Gaussian Random Field with exponential covariance generation            |
 |  Programmer : Zenan Huo                                                                  |
@@ -14,47 +14,7 @@
 |               Computers & geosciences 131 (2019): 158-169.                               |
 +==========================================================================================#
 
-export grf_gc!, grf_ec!
-
-@kernel inbounds=true function compute1!(Yf, a, b, V1, V2, V3, pts)
-    i = @index(Global)
-    if i ≤ length(Yf)
-        tmp = pts[i, 1] * V1 + pts[i, 2] * V2 + pts[i, 3] * V3
-        Yf[i] += a * sin(tmp) + b * cos(tmp)
-    end
-end
-
-@kernel inbounds=true function compute2!(Yf, C)
-    i = @index(Global)
-    if i ≤ length(Yf)
-        Yf[i] = Yf[i] * C
-    end
-end
-
-@kernel inbounds=true function compute3!(Yf, max_val, min_val, rl, rr)
-    i = @index(Global)
-    if i ≤ length(Yf)
-        Yf[i] = ((Yf[i] - min_val) / (max_val - min_val)) * (rr - rl) + rl
-    end
-end
-
-"""
-    grf_gc!(Yf, pts, rl, rr, ::Val{:CPU}; precision=Float64, If=2.0, k_m=100.0, Nh=5000, 
-        sf=1)
-
-Description:
----
-`Yf` is the scalar array to store the generated random field, `pts` is the coordinates of
-the particles size = [pts_num, 3]. `rl`/`rr` are the left/right boundary of the new range.
-
-```txt
-sf  标准偏差
-If  相关长度
-Nh  内部参数, 谐波数
-k_m 波数的最大值
-```
-"""
-function grf_gc!(Yf, pts, rl, rr, ::Val{:CPU}; 
+function grf_gc!(Yf, pts, rl, rr, ::Val{:CUDA}; 
     precision = Float64,
     If        = 2.0,
     k_m       = 100.0,
@@ -65,10 +25,10 @@ function grf_gc!(Yf, pts, rl, rr, ::Val{:CPU};
     C     = sf / sqrt(Nh) |> T2
     rl    = min(rl, rr)   |> T2
     rr    = max(rl, rr)   |> T2
-    c_pts = Array(T2.(pts))
-    c_Yf  = Array(T2.(Yf))
-    dev   = CPU()
-    @info "CPU data is ready"
+    c_pts = CuArray(T2.(pts))
+    c_Yf  = CuArray(T2.(Yf))
+    dev   = CUDABackend()
+    @info "device data is ready"
     for _ = 1:Nh
         fi = T2(6.283185) * rand(T2)
         lf = T2(1.128379) * T2(If)
@@ -92,25 +52,11 @@ function grf_gc!(Yf, pts, rl, rr, ::Val{:CPU};
     max_val = reduce(max, c_Yf)
     min_val = reduce(min, c_Yf)
     compute3!(dev)(ndrange=length(c_Yf), c_Yf, max_val, min_val, rl, rr)
+    @info "downloading data from device"
     Yf .= Array(c_Yf)
 end
 
-"""
-    grf_ec!(Yf, pts, rl, rr, Val{:CPU}; precision=Float64, If=[10.0, 8.0, 5.0], Nh=5000, 
-        sf=1)
-
-Description:
----
-`Yf` is the scalar array to store the generated random field, `pts` is the coordinates of
-the particles size = [pts_num, 3]. `rl`/`rr` are the left/right boundary of the new range.
-
-```txt
-sf  标准偏差
-If  指数协方差的相关长度 [x, y, z]
-Nh  内部参数, 谐波数
-```
-"""
-function grf_ec!(Yf, pts, rl, rr, ::Val{:CPU}; 
+function grf_ec!(Yf, pts, rl, rr, ::Val{:CUDA}; 
     precision = Float64,
     If        = [10.0, 8.0, 5.0],
     Nh        = 5000,
@@ -120,10 +66,10 @@ function grf_ec!(Yf, pts, rl, rr, ::Val{:CPU};
     C     = sf / sqrt(Nh) |> T2
     rl    = min(rl, rr)   |> T2
     rr    = max(rl, rr)   |> T2
-    c_pts = Array(T2.(pts))
-    c_Yf  = Array(T2.(Yf))
-    dev   = CPU()
-    @info "CPU data ready"
+    c_pts = CuArray(T2.(pts))
+    c_Yf  = CuArray(T2.(Yf))
+    dev   = CUDABackend()
+    @info "device data ready"
     for _ = 1:Nh
         fi = T2(6.283185) * rand(T2)
         k  = T2(0)
@@ -147,5 +93,6 @@ function grf_ec!(Yf, pts, rl, rr, ::Val{:CPU};
     max_val = reduce(max, c_Yf)
     min_val = reduce(min, c_Yf)
     compute3!(dev)(ndrange=length(c_Yf), c_Yf, max_val, min_val, rl, rr)
+    @info "downloading data from device"
     Yf .= Array(c_Yf)
 end

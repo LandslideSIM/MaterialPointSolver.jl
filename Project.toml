@@ -1,7 +1,7 @@
 name = "MaterialPointSolver"
 uuid = "dc4aa359-7d89-437d-91bb-f4b330c522c1"
 authors = ["Zenan Huo <zenan.huo@outlook.com>"]
-version = "0.2.1"
+version = "0.2.2"
 
 [deps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
@@ -31,7 +31,7 @@ ProgressMeter = "1.10"
 StructTypes = "1.10"
 Suppressor = "0.2"
 SysInfo = "0.3"
-WriteVTK = "1.19"
+WriteVTK = "1.20"
 julia = "1.10"
 
 [weakdeps]

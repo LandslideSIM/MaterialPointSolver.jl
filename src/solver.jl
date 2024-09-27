@@ -6,10 +6,10 @@
 |  Programmer : Zenan Huo                                                                  |
 |  Start Date : 01/01/2022                                                                 |
 |  Affiliation: Risk Group, UNIL-ISTE                                                      |
-|  Functions  : 1. solver!() [2D]                                                          |
-|               2. solver!() [3D]                                                          |
+|  Functions  : 1. solver!() [2D & 3D]                                                     |
 +==========================================================================================#
 
+include(joinpath(@__DIR__, "solvers/utils.jl"  ))
 include(joinpath(@__DIR__, "solvers/OS.jl"     ))
 include(joinpath(@__DIR__, "solvers/TS.jl"     ))
 include(joinpath(@__DIR__, "solvers/OS_MUSL.jl"))
@@ -38,11 +38,12 @@ This function will start to run the 2D MPM solver.
     bc      :: BOUNDARYD{T1, T2},
     workflow::Function
 ) where {T1, T2}
+    initmpstatus!(CPU())(ndrange=mp.num, grid, mp, Val(args.basis))
     # variables setup for the simulation 
     Ti = T2(0.0)
     pc = Ref{T1}(0)
     pb = progressinfo(args, "solving")
-    args.time_step==:auto ? ΔT = cfl(args, grid, mp, pts_attr, Val(args.coupling)) : ΔT=args.ΔT
+    ΔT = args.time_step==:auto ? cfl(args, grid, mp, pts_attr, Val(args.coupling)) : args.ΔT
     dev_grid, dev_mp, dev_pts_attr, dev_bc = host2device(grid, mp, pts_attr, bc, Val(args.device))
     # main part: HDF5 ON / OFF
     if args.hdf5==true
@@ -56,15 +57,16 @@ This function will start to run the 2D MPM solver.
                 if (hdf5_switch==args.hdf5_step) || (hdf5_switch==T1(0))
                     device2host!(args, mp, dev_mp, Val(args.device))
                     g = create_group(fid, "group$(hdf5_id)")
-                    g["sig"   ] = mp.σij
-                    g["eps_s" ] = mp.ϵij_s
-                    g["epII"  ] = mp.epII
-                    g["epK"   ] = mp.epK
-                    g["mp_pos"] = mp.pos
-                    g["v_s"   ] = mp.Vs
-                    g["vol"   ] = mp.vol
-                    g["mass"  ] = mp.Ms
-                    g["time"  ] = Ti
+                    g["sig"        ] = mp.σij
+                    g["eps_s"      ] = mp.ϵij_s
+                    g["epII"       ] = mp.epII
+                    g["epK"        ] = mp.epK
+                    g["strain_rate"] = mp.dϵ
+                    g["mp_pos"     ] = mp.pos
+                    g["v_s"        ] = mp.Vs
+                    g["vol"        ] = mp.vol
+                    g["mass"       ] = mp.Ms
+                    g["time"       ] = Ti
                     if args.coupling==:TS
                         g["pp"      ] = mp.σw
                         g["eps_w"   ] = mp.ϵij_w
