@@ -31,7 +31,7 @@ ProgressMeter = "1.10"
 StructTypes = "1.10"
 Suppressor = "0.2"
 SysInfo = "0.3"
-WriteVTK = "1.19"
+WriteVTK = "1.20"
 julia = "1.10"
 
 [weakdeps]
