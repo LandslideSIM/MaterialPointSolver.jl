@@ -3,8 +3,8 @@ module MaterialPointSolverCUDAExt
 using BenchmarkTools
 using CUDA
 using KernelAbstractions
-using MaterialPointSolver
 using Printf
+using MaterialPointSolver
 
 import MaterialPointSolver: host2device, device2host!, clean_device!, Tpeak, getBackend,
     warmup, grf_gc!, grf_ec!, getArray

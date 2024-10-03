@@ -18,8 +18,8 @@ export uGIMPbasisx, uGIMPbasisy, uGIMPbasisz
 
 Description:
 ---
-Standard `linear basis function` for MPM, where `Δx` is the distance between particle and node,
-and `h` is the grid spacing.
+Standard `linear basis function` for MPM, where `Δx` is the distance between particle and 
+    node, and `h` is the grid spacing.
 """
 @inline Base.@propagate_inbounds function linearBasis(Δx::T2, h::T2) where T2
     # c1  = abs(Δx)≤h

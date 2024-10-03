@@ -2,72 +2,82 @@
 |           MaterialPointSolver.jl: High-performance MPM Solver for Geomechanics           |
 +------------------------------------------------------------------------------------------+
 |  File Name  : property.jl                                                                |
-|  Description: Type system for particle's property in MaterialPointSolver.jl              |
+|  Description: Type system for property in MaterialPointSolver.jl                         |
 |  Programmer : Zenan Huo                                                                  |
 |  Start Date : 01/01/2022                                                                 |
 |  Affiliation: Risk Group, UNIL-ISTE                                                      |
-|  Struct     : 1. ParticleProperty                                                        |
-|               2. GPUParticleProperty                                                     |
-|               3. Base.show                                                               |
+|  License    : MIT License                                                                |
 +==========================================================================================#
 
-export ParticleProperty
-export GPUParticleProperty
+export AbstractProperty
+export DeviceProperty
+export Property
+export UserProperty
+export UserPropertyExtra
 
-"""
-    ParticleProperty{T1, T2}
+abstract type AbstractProperty end
+abstract type DeviceProperty{T1, T2} <: AbstractProperty end
+abstract type UserPropertyExtra end
 
-Description:
----
-This struct will save the material properties for material particle.
-"""
-@kwdef struct ParticleProperty{T1, T2} <: KernelParticleProperty{T1, T2}
-    layer::Array{T1, 1}
-    ν    ::Array{T2, 1}
-    E    ::Array{T2, 1}
-    G    ::Array{T2, 1}
-    Ks   ::Array{T2, 1}
-    Kw   ::Array{T2, 1} = [0]
-    k    ::Array{T2, 1} = [0]
-    σt   ::Array{T2, 1} = [0] # tensile strength
-    ϕ    ::Array{T2, 1} = [0] # friction angle ϕ
-    ψ    ::Array{T2, 1} = [0] # dilation angle ψ     
-    c    ::Array{T2, 1} = [0] # cohesion
-    cr   ::Array{T2, 1} = [0] # residual cohesion
-    Hp   ::Array{T2, 1} = [0] # softening modulus
-    tmp1 ::T1           = T1(0)
-    tmp2 ::T2           = T2(0)
+struct TempPropertyExtra{T1<:AbstractArray} <: UserPropertyExtra
+    i::T1
 end
 
-"""
-    GPUParticleProperty{T1, T2, 
-                        T3<:AbstractArray, 
-                        T4<:AbstractArray} <: KernelParticleProperty{T1, T2}
+@user_struct TempPropertyExtra
 
-Description:
----
-ParticleProperty GPU struct. See [`ParticleProperty`](@ref) for more details.
-"""
-struct GPUParticleProperty{T1, T2, T3<:AbstractArray, T4<:AbstractArray} <: KernelParticleProperty{T1, T2}
-    layer::T3
-    ν    ::T4
-    E    ::T4
-    G    ::T4
-    Ks   ::T4
-    Kw   ::T4
-    k    ::T4
-    σt   ::T4
-    ϕ    ::T4
-    ψ    ::T4     
-    c    ::T4
-    cr   ::T4
-    Hp   ::T4
-    tmp1 ::T1
-    tmp2 ::T2
+#=-----------------------------------------------------------------------------------------#
+|    2D Property System                                                                    |
+#↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓=#
+struct Property{T1, T2, 
+    T3 <: AbstractArray, # Array{Int  , 1}
+    T4 <: AbstractArray, # Array{Float, 1}
+    T5 <: UserPropertyExtra
+} <: DeviceProperty{T1, T2}
+    tmp1 :: T1
+    tmp2 :: T2
+    nid  :: T3
+    ν    :: T4
+    Es   :: T4
+    Gs   :: T4
+    Ks   :: T4
+    Kw   :: T4
+    k    :: T4
+    σt   :: T4
+    ϕ    :: T4
+    ϕr   :: T4
+    ψ    :: T4     
+    c    :: T4
+    cr   :: T4
+    Hp   :: T4
+    ext  :: T5
 end
 
-function Base.show(io::IO, pts_attr::PROPERTY)
-    print(io, typeof(pts_attr)                    , "\n")
-    print(io, "─"^length(string(typeof(pts_attr))), "\n")
-    print(io, "material partition: ", maximum(pts_attr.layer), "\n")
+@user_struct Property
+
+function UserProperty(; ϵ="FP64", nid, ν, Es, Gs, Ks, Kw=[0], k=[0], σt=[0], ϕ=[0], ϕr=[0], 
+    ψ=[0], c=[0], cr=[0], Hp=[0], ext=0)
+    # input check
+    length(Es) == length(Gs) == length(Ks) == length(ν) || 
+        throw(ArgumentError("The length of Es, Gs, Ks, and ν must be the same."))
+    length(unique(nid)) == length(Es) || 
+        throw(ArgumentError("nid layer must be the same as the length of properties."))
+
+    ext = ext == 0 ? TempPropertyExtra(rand(2)) : ext
+    ϵ == ϵ in ["FP64", "FP32"] ? ϵ : "FP64"
+    T1 = ϵ == "FP64" ? Int64 : Int32
+    T2 = ϵ == "FP64" ? Float64 : Float32
+    tmp = Property{T1, T2, AbstractArray{T1, 1}, AbstractArray{T2, 1}, UserPropertyExtra}(
+        0, 0.0, nid, ν, Es, Gs, Ks, Kw, k, σt, ϕ, ϕr, ψ, c, cr, Hp, ext)
+    return adapt(Array, tmp)
 end
+
+function Base.show(io::IO, attr::T) where {T<:DeviceProperty}
+    typeof(attr).parameters[2]==Float64 ? precision="FP64" : 
+    typeof(attr).parameters[2]==Float32 ? precision="FP32" : nothing
+    # printer
+    print(io, "DeviceProperty:"      , "\n")
+    print(io, "┬", "─" ^ 14          , "\n")
+    print(io, "└─ ", "ϵ: ", precision, "\n")
+    return nothing
+end
+#=↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑=#

@@ -13,27 +13,27 @@
 export mcP!
 
 """
-    mcP!(mp::KernelParticle2D{T1, T2}, pts_attr::KernelParticleProperty{T1, T2})
+    mcP!(mp::DeviceParticle2D{T1, T2}, attr::DeviceProperty{T1, T2})
 
 Description:
 ---
 Implement Mohr-Coulomb constitutive model (2D plane strain).
 """
 @kernel inbounds=true function mcP!(
-    mp      ::      KernelParticle2D{T1, T2},
-    pts_attr::KernelParticleProperty{T1, T2}
+    mp  ::DeviceParticle2D{T1, T2},
+    attr::  DeviceProperty{T1, T2}
 ) where {T1, T2} 
     ix = @index(Global)
-    if ix≤mp.num
-        pid = pts_attr.layer[ix]
-        c   = pts_attr.c[pid]
-        Hp  = pts_attr.Hp[pid]
-        cr  = pts_attr.cr[pid]
-        ϕ   = pts_attr.ϕ[pid]
-        G   = pts_attr.G[pid]
-        Ks  = pts_attr.Ks[pid]
+    if ix ≤ mp.np
+        nid = attr.nid[ix]
+        c   = attr.c[nid]
+        Hp  = attr.Hp[nid]
+        cr  = attr.cr[nid]
+        ϕ   = attr.ϕ[nid]
+        Gs  = attr.Gs[nid]
+        Ks  = attr.Ks[nid]
         # mohr-coulomb 
-        c     = max(c + Hp * mp.epII[ix], cr)
+        c     = max(c + Hp * mp.ϵq[ix], cr)
         ds    = mp.σij[ix, 1] - mp.σij[ix, 2]
         tau   = sqrt(T2(0.25) * ds^T1(2) + mp.σij[ix, 4]^T1(2))
         sig   = T2(0.5) * (mp.σij[ix, 1] + mp.σij[ix, 2])
@@ -65,16 +65,16 @@ Implement Mohr-Coulomb constitutive model (2D plane strain).
         mp.σij[ix, 3] = sn3
         mp.σij[ix, 4] = sn4
 
-        Dt         = Ks + T2(1.333333) * G
-        Dd         = Ks - T2(0.666667) * G
-        base       = T2(1.0) / ((Dd - Dt) * (T2(2.0) * Dd + Dt))
-        ep_xx      = -(Dd * dsig1 + Dt * dsig1 - Dd * dsig2 - Dd * dsig3) * base
-        ep_yy      = -(-Dd * dsig1 + Dd * dsig2 + Dt * dsig2 - Dd * dsig3) * base
-        ep_zz      = -(-Dd * dsig1 - Dd * dsig2 + Dd * dsig3 + Dt * dsig3) * base
-        ep_xy      = dsig4 / G
-        mp.epK[ix] = ep_xx + ep_yy + ep_zz
-        mp.epII[ix] += sqrt(T2(0.666667) * (ep_xx^T1(2) + ep_yy^T1(2) +
-                                            ep_zz^T1(2) + T2(2.0) * ep_xy^T1(2)))
+        Dt        = Ks + T2(1.333333) * Gs
+        Dd        = Ks - T2(0.666667) * Gs
+        base      = T2(1.0) / ((Dd - Dt) * (T2(2.0) * Dd + Dt))
+        ep_xx     = -(Dd * dsig1 + Dt * dsig1 - Dd * dsig2 - Dd * dsig3) * base
+        ep_yy     = -(-Dd * dsig1 + Dd * dsig2 + Dt * dsig2 - Dd * dsig3) * base
+        ep_zz     = -(-Dd * dsig1 - Dd * dsig2 + Dd * dsig3 + Dt * dsig3) * base
+        ep_xy     = dsig4 / Gs
+        mp.ϵk[ix] = ep_xx + ep_yy + ep_zz
+        mp.ϵq[ix] += sqrt(T2(0.666667) * (ep_xx * ep_xx + ep_yy * ep_yy +
+                                            ep_zz * ep_zz + ep_xy * ep_xy * T2(2.0)))
         # update mean stress tensor
         mp.σm[ix] = (mp.σij[ix, 1] + mp.σij[ix, 2] + mp.σij[ix, 3]) * T2(0.333333)
         # update deviatoric stress tensor
@@ -86,7 +86,7 @@ Implement Mohr-Coulomb constitutive model (2D plane strain).
 end
 
 """
-    mcP!(mp::KernelParticle3D{T1, T2}, pts_attr::KernelParticleProperty{T1, T2})
+    mcP!(mp::DeviceParticle3D{T1, T2}, attr::DeviceProperty{T1, T2})
 
 Description:
 ---
@@ -126,7 +126,7 @@ Implement Mohr-Coulomb constitutive model (3D).
 end
 
 """
-    mcP!(mp::KernelParticle3D{T1, T2}, pts_attr::KernelParticleProperty{T1, T2})
+    mcP!(mp::DeviceParticle3D{T1, T2}, attr::DeviceProperty{T1, T2})
 
 Description:
 ---
@@ -144,21 +144,21 @@ Implement Mohr-Coulomb constitutive model (3D).
 8. 返回更新后的应力：返回迭代后的应力值。
 """
 @kernel inbounds=true function mcP!(
-    mp      ::      KernelParticle3D{T1, T2},
-    pts_attr::KernelParticleProperty{T1, T2}
+    mp      ::      DeviceParticle3D{T1, T2},
+    attr::DeviceProperty{T1, T2}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix ≤ mp.num
+    if ix ≤ mp.np
         #=
-        pid = pts_attr.layer[ix]
-        coh = pts_attr.c[pid]
-        Hp  = pts_attr.Hp[pid]
-        cr  = pts_attr.cr[pid]
-        ϕ   = pts_attr.ϕ[pid]
-        ψ   = pts_attr.ψ[pid]
-        Gs  = pts_attr.G[pid]
-        Ks  = pts_attr.Ks[pid]
-        σt  = pts_attr.σt[pid]
+        nid = attr.nid[ix]
+        coh = attr.c[nid]
+        Hp  = attr.Hp[nid]
+        cr  = attr.cr[nid]
+        ϕ   = attr.ϕ[nid]
+        ψ   = attr.ψ[nid]
+        Gs  = attr.Gs[nid]
+        Ks  = attr.Ks[nid]
+        σt  = attr.σt[nid]
         yield_type = T1(0)
         softening_ = false
         # to do save the value: 
@@ -172,7 +172,7 @@ Implement Mohr-Coulomb constitutive model (3D).
         cohesion_peak_ = 0
         cohesion_residual_ = 0
         σm = mp.σm[ix]
-        epII = mp.epII[ix]
+        ϵq = mp.ϵq[ix]
         Δ = eps(T2)
         
         # update MC parameters using a linear softening rule

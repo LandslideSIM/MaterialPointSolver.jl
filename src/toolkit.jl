@@ -1,7 +1,7 @@
 #==========================================================================================+
 |           MaterialPointSolver.jl: High-performance MPM Solver for Geomechanics           |
 +------------------------------------------------------------------------------------------+
-|  File Name  : toolkit.jl                                                                 |
+|  File Name  : MaterialPointSolver.jl                                                     |
 |  Description: Some helper functions for MPMSolver.jl                                     |
 |  Programmer : Zenan Huo                                                                  |
 |  Start Date : 01/01/2022                                                                 |

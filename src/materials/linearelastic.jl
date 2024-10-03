@@ -13,21 +13,21 @@
 export liE!
 
 """
-    liE!(mp::KernelParticle2D{T1, T2}, pts_attr::KernelParticleProperty{T1, T2})
+    liE!(mp::DeviceParticle2D{T1, T2}, attr::DeviceProperty{T1, T2})
 
 Description:
 ---
 GPU kernel to implement linear elastic constitutive model (2D plane strain).
 """
 @kernel inbounds=true function liE!(
-    mp      ::      KernelParticle2D{T1, T2},
-    pts_attr::KernelParticleProperty{T1, T2}
+    mp  ::DeviceParticle2D{T1, T2},
+    attr::  DeviceProperty{T1, T2}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix≤mp.num
-        pid = pts_attr.layer[ix]
-        Ks  = pts_attr.Ks[pid]
-        Gt  = pts_attr.G[pid]
+    if ix ≤ mp.np
+        nid = attr.nid[ix]
+        Ks  = attr.Ks[nid]
+        Gt  = attr.Gs[nid]
         # spin tensor
         # here, ωij = (vorticity tensor) × Δt, i.e.
         # ωij = (∂Ni × Vj - ∂Nj × Vi) × 0.5 × Δt
@@ -43,20 +43,20 @@ GPU kernel to implement linear elastic constitutive model (2D plane strain).
         σij4 = mp.σij[ix, 4]
         mp.σij[ix, 1] +=  ωxy *  σij4 * T2(2.0)
         mp.σij[ix, 2] += -ωxy *  σij4 * T2(2.0)
-        mp.σij[ix, 4] +=  ωxy * (σij2 -σij1)
+        mp.σij[ix, 4] +=  ωxy * (σij2 - σij1)
         # linear elastic
         Dt = Ks + T2(1.333333) * Gt
         Dd = Ks - T2(0.666667) * Gt
-        mp.σij[ix, 1] += Dt * mp.Δϵij_s[ix, 1] + 
-                         Dd * mp.Δϵij_s[ix, 2] + 
-                         Dd * mp.Δϵij_s[ix, 3]
-        mp.σij[ix, 2] += Dd * mp.Δϵij_s[ix, 1] + 
-                         Dt * mp.Δϵij_s[ix, 2] + 
-                         Dd * mp.Δϵij_s[ix, 3]
-        mp.σij[ix, 3] += Dd * mp.Δϵij_s[ix, 1] + 
-                         Dd * mp.Δϵij_s[ix, 2] + 
-                         Dt * mp.Δϵij_s[ix, 3]
-        mp.σij[ix, 4] += Gt * mp.Δϵij_s[ix, 4]
+        mp.σij[ix, 1] += Dt * mp.Δϵijs[ix, 1] + 
+                         Dd * mp.Δϵijs[ix, 2] + 
+                         Dd * mp.Δϵijs[ix, 3]
+        mp.σij[ix, 2] += Dd * mp.Δϵijs[ix, 1] + 
+                         Dt * mp.Δϵijs[ix, 2] + 
+                         Dd * mp.Δϵijs[ix, 3]
+        mp.σij[ix, 3] += Dd * mp.Δϵijs[ix, 1] + 
+                         Dd * mp.Δϵijs[ix, 2] + 
+                         Dt * mp.Δϵijs[ix, 3]
+        mp.σij[ix, 4] += Gt * mp.Δϵijs[ix, 4]
         # update mean stress tensor
         σm = (mp.σij[ix, 1] + mp.σij[ix, 2] + mp.σij[ix, 3]) * T2(0.333333)
         mp.σm[ix] = σm
@@ -69,21 +69,21 @@ GPU kernel to implement linear elastic constitutive model (2D plane strain).
 end
 
 """
-    liE!(mp::KernelParticle3D{T1, T2}, pts_attr::KernelParticleProperty{T1, T2})
+    liE!(mp::DeviceParticle3D{T1, T2}, attr::DeviceProperty{T1, T2})
 
 Description:
 ---
 GPU kernel to implement linear elastic constitutive model (3D).
 """
 @kernel inbounds=true function liE!(
-    mp      ::      KernelParticle3D{T1, T2},
-    pts_attr::KernelParticleProperty{T1, T2}
+    mp  ::DeviceParticle3D{T1, T2},
+    attr::  DeviceProperty{T1, T2}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix≤mp.num
-        pid = pts_attr.layer[ix]
-        Ks  = pts_attr.Ks[pid]
-        Gt  = pts_attr.G[pid]
+    if ix ≤ mp.np
+        nid = attr.nid[ix]
+        Ks  = attr.Ks[nid]
+        Gt  = attr.Gs[nid]
         # spin tensor
         # here, ωij = (vorticity tensor) × Δt, i.e.
         # ωij = (∂Ni × Vj - ∂Nj × Vi) × 0.5 × Δt
@@ -114,18 +114,18 @@ GPU kernel to implement linear elastic constitutive model (3D).
         # linear elastic
         Dt = Ks + T2(1.333333) * Gt
         Dd = Ks - T2(0.666667) * Gt
-        mp.σij[ix, 1] += Dt * mp.Δϵij_s[ix, 1] + 
-                         Dd * mp.Δϵij_s[ix, 2] + 
-                         Dd * mp.Δϵij_s[ix, 3]
-        mp.σij[ix, 2] += Dd * mp.Δϵij_s[ix, 1] + 
-                         Dt * mp.Δϵij_s[ix, 2] + 
-                         Dd * mp.Δϵij_s[ix, 3]
-        mp.σij[ix, 3] += Dd * mp.Δϵij_s[ix, 1] + 
-                         Dd * mp.Δϵij_s[ix, 2] + 
-                         Dt * mp.Δϵij_s[ix, 3]
-        mp.σij[ix, 4] += Gt * mp.Δϵij_s[ix, 4]
-        mp.σij[ix, 5] += Gt * mp.Δϵij_s[ix, 5]
-        mp.σij[ix, 6] += Gt * mp.Δϵij_s[ix, 6]
+        mp.σij[ix, 1] += Dt * mp.Δϵijs[ix, 1] + 
+                         Dd * mp.Δϵijs[ix, 2] + 
+                         Dd * mp.Δϵijs[ix, 3]
+        mp.σij[ix, 2] += Dd * mp.Δϵijs[ix, 1] + 
+                         Dt * mp.Δϵijs[ix, 2] + 
+                         Dd * mp.Δϵijs[ix, 3]
+        mp.σij[ix, 3] += Dd * mp.Δϵijs[ix, 1] + 
+                         Dd * mp.Δϵijs[ix, 2] + 
+                         Dt * mp.Δϵijs[ix, 3]
+        mp.σij[ix, 4] += Gt * mp.Δϵijs[ix, 4]
+        mp.σij[ix, 5] += Gt * mp.Δϵijs[ix, 5]
+        mp.σij[ix, 6] += Gt * mp.Δϵijs[ix, 6]
         # update mean stress tensor
         σm = (mp.σij[ix, 1] + mp.σij[ix, 2] + mp.σij[ix, 3]) * T2(0.333333)
         mp.σm[ix] = σm
