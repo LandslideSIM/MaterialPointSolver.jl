@@ -141,7 +141,7 @@ function UserGrid2D(; ϵ="FP64", phase=1, x1, x2, y1, y2, dx, dy, NIC=16, ext=0)
         UserGridExtra}(phase, x1, x2, y1, y2, dx, dy, nnx, nny, ni, NIC, ξ, ncx, ncy, nc, 
         p2nD, σm, σw, Ω, ms, mw, mi, ps, pw, vs, vw, vsT, vwT, fs, fw, fd, as, aw, Δus, Δuw,
         ext)
-    return adapt(Array, tmp)
+    return user_adapt(Array, tmp)
 end
 
 function Base.show(io::IO, grid::T) where {T<:DeviceGrid2D}
@@ -305,7 +305,7 @@ function UserGrid3D(; ϵ="FP64", phase=1, x1, x2, y1, y2, z1, z2, dx, dy, dz, NI
         UserGridExtra}(phase, x1, x2, y1, y2, z1, z2, dx, dy, dz, nnx, nny, nnz, ni, NIC, ξ, 
         ncx, ncy, ncz, nc, p2nD, σm, σw, Ω, ms, mw, mi, ps, pw, vs, vw, vsT, vwT, fs, fw, 
         fd, as, aw, Δus, Δuw, ext)
-    return adapt(Array, tmp)
+    return user_adapt(Array, tmp)
 end
 
 function Base.show(io::IO, grid::T) where {T<:DeviceGrid3D}

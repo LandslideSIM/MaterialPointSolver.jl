@@ -1,5 +1,16 @@
+#==========================================================================================+
+|           MaterialPointSolver.jl: High-performance MPM Solver for Geomechanics           |
++------------------------------------------------------------------------------------------+
+|  File Name  : 2d_case.jl                                                                 |
+|  Description: Case used to vaildate the functions                                        |
+|  Programmer : Zenan Huo                                                                  |
+|  Start Date : 01/01/2022                                                                 |
+|  Affiliation: Risk Group, UNIL-ISTE                                                      |
++==========================================================================================#
+
 using MaterialPointSolver
 using KernelAbstractions
+using CairoMakie
 using CUDA
 
 MaterialPointSolver.warmup(Val(:CUDA))
@@ -112,8 +123,6 @@ bc = UserVBoundary2D(
 # solver setup
 materialpointsolver!(args, grid, mp, attr, bc)
 
-
-using CairoMakie
 let 
     figregular = MaterialPointSolver.tnr
     figbold = MaterialPointSolver.tnrb
@@ -126,44 +135,4 @@ let
     limits!(ax, -0.02, 0.48, -0.02, 0.12)
     display(fig)
 end
-savevtu(args, grid, mp, attr)
-
-# initmpstatus!(CPU())(ndrange=mp.np, grid, mp, Val(args.basis))
-# # variables setup for the simulation 
-# T2 = Float64
-# T1 = Int64
-# Ti = T2(0.0)
-# ΔT = 0.5
-# G = Ti < args.Te ? args.gravity / args.Te * Ti : args.gravity
-# dev = getBackend(Val(args.device))
-
-
-# resetgridstatus_OS!(dev)(ndrange=grid.ni, grid)
-# args.device == :CPU && args.basis == :uGIMP ? 
-#     resetmpstatus_OS_CPU!(dev)(ndrange=mp.np, grid, mp, Val(args.basis)) :
-#     resetmpstatus_OS!(dev)(ndrange=mp.np, grid, mp, Val(args.basis))
-# P2G_OS!(dev)(ndrange=mp.np, grid, mp, G)
-# solvegrid_a_OS!(dev)(ndrange=grid.ni, grid, bc, ΔT, args.ζs)
-# doublemapping1_a_OS!(dev)(ndrange=mp.np, grid, mp, attr, ΔT)
-# doublemapping2_OS!(dev)(ndrange=mp.np, grid, mp)
-# doublemapping3_OS!(dev)(ndrange=grid.ni, grid, bc, ΔT)
-# G2P_OS!(dev)(ndrange=mp.np, grid, mp, ΔT)
-# if args.constitutive == :hyperelastic
-#     hyE!(dev)(ndrange=mp.np, mp, attr)
-# elseif args.constitutive == :linearelastic
-#     liE!(dev)(ndrange=mp.np, mp, attr)
-# elseif args.constitutive == :druckerprager
-#     liE!(dev)(ndrange=mp.np, mp, attr)
-#     if Ti ≥ args.Te
-#         dpP!(dev)(ndrange=mp.np, mp, attr)
-#     end
-# elseif args.constitutive == :mohrcoulomb
-#     liE!(dev)(ndrange=mp.np, mp, attr)
-#     if Ti ≥ args.Te
-#         mcP!(dev)(ndrange=mp.np, mp, attr)
-#     end
-# end
-# if args.MVL == true
-#     vollock1_OS!(dev)(ndrange=mp.np, grid, mp)
-#     vollock2_OS!(dev)(ndrange=mp.np, grid, mp)
-# end
+rm(joinpath(abspath(args.project_path), args.project_name), recursive=true, force=true)

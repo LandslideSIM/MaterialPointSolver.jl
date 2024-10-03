@@ -68,7 +68,7 @@ function UserProperty(; ϵ="FP64", nid, ν, Es, Gs, Ks, Kw=[0], k=[0], σt=[0], 
     T2 = ϵ == "FP64" ? Float64 : Float32
     tmp = Property{T1, T2, AbstractArray{T1, 1}, AbstractArray{T2, 1}, UserPropertyExtra}(
         0, 0.0, nid, ν, Es, Gs, Ks, Kw, k, σt, ϕ, ϕr, ψ, c, cr, Hp, ext)
-    return adapt(Array, tmp)
+    return user_adapt(Array, tmp)
 end
 
 function Base.show(io::IO, attr::T) where {T<:DeviceProperty}

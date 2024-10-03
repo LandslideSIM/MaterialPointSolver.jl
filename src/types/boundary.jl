@@ -65,7 +65,7 @@ function UserVBoundary2D(; ϵ="FP64", vx_s_idx, vx_s_val, vy_s_idx, vy_s_val, vx
     tmp = VBoundary2D{T1, T2, AbstractArray{T1, 1}, AbstractArray{T2, 1}, 
         UserBoundaryExtra}(vx_s_idx, vx_s_val, vy_s_idx, vy_s_val, vx_w_idx, vx_w_val, 
         vy_w_idx, vy_w_val, smlength, tmp1, tmp2, ext)
-    return adapt(Array, tmp)
+    return user_adapt(Array, tmp)
 end
 
 function Base.show(io::IO, bc::T) where {T<:DeviceVBoundary2D}
@@ -127,7 +127,7 @@ function UserVBoundary3D(; ϵ="FP64", vx_s_idx, vx_s_val, vy_s_idx, vy_s_val, vz
         UserBoundaryExtra}(vx_s_idx, vx_s_val, vy_s_idx, vy_s_val, vz_s_idx, vz_s_val, 
         vx_w_idx, vx_w_val, vy_w_idx, vy_w_val, vz_w_idx, vz_w_val, smlength, tmp1, tmp2, 
         ext)
-    return adapt(Array, tmp)
+    return user_adapt(Array, tmp)
 end
 
 function Base.show(io::IO, bc::T) where {T<:DeviceVBoundary3D}

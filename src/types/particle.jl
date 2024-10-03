@@ -133,7 +133,7 @@ function UserParticle2D(; ϵ="FP64", phase=1, NIC=16, dx, dy, ξ, n=[0], ρs, ρ
         AbstractArray{T2, 1}, AbstractArray{T2, 2}, UserParticleExtra}(phase, np, NIC, dx, 
         dy, p2c, p2n, ξ, ξ0, σm, ϵq, ϵk, ϵv, Ω, Ω0, ms, mw, mi, n, ρs, ρs0, ρw, ρw0, σw, 
         σij, ϵijs, ϵijw, Δϵijs, Δϵijw, sij, vs, vw, ps, pw, Nij, ∂Nx, ∂Ny, ΔFs, ΔFw, F, ext)
-    return adapt(Array, tmp)
+    return user_adapt(Array, tmp)
 end
 
 function Base.show(io::IO, mp::T) where {T<:DeviceParticle2D}
@@ -265,7 +265,7 @@ function UserParticle3D(; ϵ="FP64", phase=1, NIC=16, dx, dy, dz, ξ, n=[0], ρs
         dy, dz, p2c, p2n, ξ, ξ0, σm, ϵq, ϵk, ϵv, Ω, Ω0, ms, mw, mi, n, ρs, ρs0, ρw, ρw0, σw, 
         σij, ϵijs, ϵijw, Δϵijs, Δϵijw, sij, vs, vw, ps, pw, Nij, ∂Nx, ∂Ny, ∂Nz, ΔFs, ΔFw, F, 
         ext)
-    return adapt(Array, tmp)
+    return user_adapt(Array, tmp)
 end
 
 function Base.show(io::IO, mp::T) where {T<:DeviceParticle3D}

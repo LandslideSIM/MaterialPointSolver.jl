@@ -25,8 +25,8 @@ function host2device(
     datasize = Base.summarysize(grid) + Base.summarysize(mp) +
                Base.summarysize(attr) + Base.summarysize(bc)
     outprint = @sprintf("%.1f", datasize / 1024 ^ 3)
-    dev_id = CUDA.device().handle
-    content = "uploading [≈ $(outprint) GiB] → :CUDA [$(dev_id)]"
+    dev_id   = CUDA.device().handle
+    content  = "uploading [≈ $(outprint) GiB] → :CUDA [$(dev_id)]"
     println("\e[1;32m[▲ I/O:\e[0m \e[0;32m$(content)\e[0m")
     # upload data to device
     dev_grid = user_adapt(CuArray, grid)
