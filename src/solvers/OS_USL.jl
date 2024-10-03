@@ -13,7 +13,8 @@ export solvegrid_USL_OS!
 export solvegrid_a_USL_OS!
 
 """
-    solvegrid_USL_OS!(grid::DeviceGrid2D{T1, T2}, bc::DeviceVBoundary2D{T1, T2}, ΔT::T2, ζs::T2)
+    solvegrid_USL_OS!(grid::DeviceGrid2D{T1, T2}, bc::DeviceVBoundary2D{T1, T2}, ΔT::T2, 
+        ζs::T2)
 
 Description:
 ---
@@ -51,7 +52,8 @@ Description:
 end
 
 """
-    solvegrid_USL_OS!(grid::DeviceGrid3D{T1, T2}, bc::DeviceVBoundary3D{T1, T2}, ΔT::T2, ζs::T2)
+    solvegrid_USL_OS!(grid::DeviceGrid3D{T1, T2}, bc::DeviceVBoundary3D{T1, T2}, ΔT::T2, 
+        ζs::T2)
 
 Description:
 ---
@@ -247,7 +249,7 @@ function procedure!(
         resetmpstatus_OS!(dev)(ndrange=mp.np, grid, mp, Val(args.basis))
     P2G_OS!(dev)(ndrange=mp.np, grid, mp, G)
     solvegrid_a_USL_OS!(dev)(ndrange=grid.ni, grid, bc, ΔT, args.ζs)
-    doublemapping1_a_OS!(dev)(ndrange=mp.np, grid, mp, attr, ΔT)
+    doublemapping1_a_OS!(dev)(ndrange=mp.np, grid, mp, attr, ΔT, args.FLIP, args.PIC)
     G2P_OS!(dev)(ndrange=mp.np, grid, mp, ΔT)
     if args.constitutive == :hyperelastic
         hyE!(dev)(ndrange=mp.np, mp, attr)

@@ -519,14 +519,14 @@ Description:
         Fs_x = grid.fs[ix, 1] + dampvs * sign(grid.vs[ix, 1])
         Fs_y = grid.fs[ix, 2] + dampvs * sign(grid.vs[ix, 2])
         # update nodal velocity
-        grid.vs[ix, 1] += Fs_x * ΔT * ms_denom
-        grid.vs[ix, 2] += Fs_y * ΔT * ms_denom
+        grid.vsT[ix, 1] = grid.vs[ix, 1] + Fs_x * ΔT * ms_denom
+        grid.vsT[ix, 2] = grid.vs[ix, 2] + Fs_y * ΔT * ms_denom
         # update nodal acceleration
         grid.as[ix, 1] = Fs_x * ms_denom
         grid.as[ix, 2] = Fs_y * ms_denom
         # boundary condition
-        bc.vx_s_idx[ix] ≠ T1(0) ? grid.vs[ix, 1] = bc.vx_s_val[ix] : nothing
-        bc.vy_s_idx[ix] ≠ T1(0) ? grid.vs[ix, 2] = bc.vy_s_val[ix] : nothing
+        bc.vx_s_idx[ix] ≠ T1(0) ? grid.vsT[ix, 1] = bc.vx_s_val[ix] : nothing
+        bc.vy_s_idx[ix] ≠ T1(0) ? grid.vsT[ix, 2] = bc.vy_s_val[ix] : nothing
         bc.vx_s_idx[ix] ≠ T1(0) ? grid.as[ix, 1] = bc.vx_s_val[ix] : nothing
         bc.vy_s_idx[ix] ≠ T1(0) ? grid.as[ix, 2] = bc.vy_s_val[ix] : nothing
         # reset grid momentum
@@ -571,17 +571,17 @@ Description:
         Fs_y = grid.fs[ix, 2] + dampvs * sign(grid.vs[ix, 2])
         Fs_z = grid.fs[ix, 3] + dampvs * sign(grid.vs[ix, 3])
         # update nodal velocity
-        grid.vs[ix, 1] += Fs_x * ΔT * ms_denom
-        grid.vs[ix, 2] += Fs_y * ΔT * ms_denom
-        grid.vs[ix, 3] += Fs_z * ΔT * ms_denom
+        grid.vsT[ix, 1] = grid.vs[ix, 1] + Fs_x * ΔT * ms_denom
+        grid.vsT[ix, 2] = grid.vs[ix, 2] + Fs_y * ΔT * ms_denom
+        grid.vsT[ix, 3] = grid.vs[ix, 3] + Fs_z * ΔT * ms_denom
         # update nodal acceleration
         grid.as[ix, 1] = Fs_x * ms_denom
         grid.as[ix, 2] = Fs_y * ms_denom
         grid.as[ix, 3] = Fs_z * ms_denom
         # boundary condition
-        bc.vx_s_idx[ix] ≠ T1(0) ? grid.vs[ix, 1] = bc.vx_s_val[ix] : nothing
-        bc.vy_s_idx[ix] ≠ T1(0) ? grid.vs[ix, 2] = bc.vy_s_val[ix] : nothing
-        bc.vz_s_idx[ix] ≠ T1(0) ? grid.vs[ix, 3] = bc.vz_s_val[ix] : nothing
+        bc.vx_s_idx[ix] ≠ T1(0) ? grid.vsT[ix, 1] = bc.vx_s_val[ix] : nothing
+        bc.vy_s_idx[ix] ≠ T1(0) ? grid.vsT[ix, 2] = bc.vy_s_val[ix] : nothing
+        bc.vz_s_idx[ix] ≠ T1(0) ? grid.vsT[ix, 3] = bc.vz_s_val[ix] : nothing
         bc.vx_s_idx[ix] ≠ T1(0) ? grid.as[ix, 1] = bc.vx_s_val[ix] : nothing
         bc.vy_s_idx[ix] ≠ T1(0) ? grid.as[ix, 2] = bc.vy_s_val[ix] : nothing
         bc.vz_s_idx[ix] ≠ T1(0) ? grid.as[ix, 3] = bc.vz_s_val[ix] : nothing
@@ -696,10 +696,12 @@ Description:
 end
 
 @kernel inbounds = true function doublemapping1_a_OS!(
-    grid    ::          DeviceGrid2D{T1, T2},
-    mp      ::      DeviceParticle2D{T1, T2},
-    attr::DeviceProperty{T1, T2},
-    ΔT      ::T2
+    grid::    DeviceGrid2D{T1, T2},
+    mp  ::DeviceParticle2D{T1, T2},
+    attr::  DeviceProperty{T1, T2},
+    ΔT  ::T2,
+    FLIP::T2,
+    PIC ::T2
 ) where {T1, T2}
     # 4/3 = 1.333333
     ix = @index(Global)
@@ -708,23 +710,25 @@ end
         nid = attr.nid[ix]
         Ks  = attr.Ks[nid]
         Gs  = attr.Gs[nid]
-        tmp_vx = tmp_vy = tmp_px = tmp_py = T2(0.0)
+        tmp_vx = tmp_vy = tmp_px = tmp_py = tmp_Tx = tmp_Ty = T2(0.0)
         # update particle position
         @KAunroll for iy in Int32(1):Int32(mp.NIC)
             Ni = mp.Nij[ix, iy]
             if Ni ≠ T2(0.0)
                 p2n = mp.p2n[ix, iy]
-                tmp_px += Ni * grid.vs[p2n, 1]
-                tmp_py += Ni * grid.vs[p2n, 2]
+                tmp_px += Ni * grid.vsT[p2n, 1]
+                tmp_py += Ni * grid.vsT[p2n, 2]
                 tmp_vx += Ni * grid.as[p2n, 1]
                 tmp_vy += Ni * grid.as[p2n, 2]
+                tmp_Tx += Ni * grid.vs[p2n, 1]
+                tmp_Ty += Ni * grid.vs[p2n, 2]
             end
         end
         mp.ξ[ix, 1] += tmp_px * ΔT
         mp.ξ[ix, 2] += tmp_py * ΔT
         # update particle velocity
-        mp.vs[ix, 1] += tmp_vx * ΔT
-        mp.vs[ix, 2] += tmp_vy * ΔT
+        mp.vs[ix, 1] = FLIP * mp.vs[ix, 1] + PIC * tmp_Tx + tmp_vx * ΔT
+        mp.vs[ix, 2] = FLIP * mp.vs[ix, 2] + PIC * tmp_Ty + tmp_vy * ΔT
         # update particle momentum
         mp.ps[ix, 1] = mp.ms[ix] * mp.vs[ix, 1]
         mp.ps[ix, 2] = mp.ms[ix] * mp.vs[ix, 2]
@@ -806,7 +810,9 @@ end
     grid::    DeviceGrid3D{T1, T2},
     mp  ::DeviceParticle3D{T1, T2},
     attr::  DeviceProperty{T1, T2},
-    ΔT  ::T2
+    ΔT  ::T2,
+    FLIP::T2,
+    PIC ::T2
 ) where {T1, T2}
     # 4/3 = 1.333333
     ix = @index(Global)
@@ -815,27 +821,32 @@ end
         nid = attr.nid[ix]
         Ks  = attr.Ks[nid]
         Gs  = attr.Gs[nid]
-        tmp_vx = tmp_vy = tmp_vz = tmp_px = tmp_py = tmp_pz = T2(0.0)
+        tmp_vx = tmp_vy = tmp_vz = T2(0.0)
+        tmp_px = tmp_py = tmp_pz = T2(0.0)
+        tmp_Tx = tmp_Ty = tmp_Tz = T2(0.0)
         # update particle position
         @KAunroll for iy in Int32(1):Int32(mp.NIC)
             Ni = mp.Nij[ix, iy]
             if Ni ≠ T2(0.0)
                 p2n = mp.p2n[ix, iy]
-                tmp_px += Ni * grid.vs[p2n, 1]
-                tmp_py += Ni * grid.vs[p2n, 2]
-                tmp_pz += Ni * grid.vs[p2n, 3]
+                tmp_px += Ni * grid.vsT[p2n, 1]
+                tmp_py += Ni * grid.vsT[p2n, 2]
+                tmp_pz += Ni * grid.vsT[p2n, 3]
                 tmp_vx += Ni * grid.as[p2n, 1]
                 tmp_vy += Ni * grid.as[p2n, 2]
                 tmp_vz += Ni * grid.as[p2n, 3]
+                tmp_Tx += Ni * grid.vs[p2n, 1]
+                tmp_Ty += Ni * grid.vs[p2n, 2]
+                tmp_Tz += Ni * grid.vs[p2n, 3]
             end
         end
         mp.ξ[ix, 1] += tmp_px * ΔT
         mp.ξ[ix, 2] += tmp_py * ΔT
         mp.ξ[ix, 3] += tmp_pz * ΔT
         # update particle velocity
-        mp.vs[ix, 1] += tmp_vx * ΔT
-        mp.vs[ix, 2] += tmp_vy * ΔT
-        mp.vs[ix, 3] += tmp_vz * ΔT
+        mp.vs[ix, 1] = FLIP * mp.vs[ix, 1] + PIC * tmp_Tx + tmp_vx * ΔT
+        mp.vs[ix, 2] = FLIP * mp.vs[ix, 2] + PIC * tmp_Ty + tmp_vy * ΔT
+        mp.vs[ix, 3] = FLIP * mp.vs[ix, 3] + PIC * tmp_Tz + tmp_vz * ΔT
         # update particle momentum
         mp.ps[ix, 1] = mp.ms[ix] * mp.vs[ix, 1]
         mp.ps[ix, 2] = mp.ms[ix] * mp.vs[ix, 2]

@@ -19,13 +19,13 @@ Description:
 ---
 Implement hyper elastic constitutive model (Neo-Hookean).
 """
-@kernel inbounds=true function hyE!(
+@kernel inbounds = true function hyE!(
     mp  ::DeviceParticle2D{T1, T2},
     attr::  DeviceProperty{T1, T2}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix≤mp.np
-        J   = mp.Ω / mp.Ω₀
+    if ix ≤ mp.np
+        J   = mp.Ω[ix] / mp.Ω0[ix]
         nid = attr.nid[ix]
         μ   = attr.Gs[nid]
         λ   = attr.Ks[nid] - T2(0.666667) * μ
@@ -56,13 +56,13 @@ Description:
 ---
 Implement hyper elastic constitutive model (Neo-Hookean).
 """
-@kernel inbounds=true function hyE!(
+@kernel inbounds = true function hyE!(
     mp  ::DeviceParticle3D{T1, T2},
     attr::  DeviceProperty{T1, T2}
 ) where {T1, T2}
     ix = @index(Global)
-    if ix≤mp.np
-        J   = mp.J[ix]
+    if ix ≤ mp.np
+        J   = mp.Ω[ix] / mp.Ω0[ix]
         nid = attr.nid[ix]
         μ   = attr.Gs[nid]
         λ   = attr.Ks[nid] - T2(0.666667) * μ

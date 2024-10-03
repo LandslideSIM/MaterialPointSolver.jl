@@ -10,12 +10,12 @@
 |               02. @memcheck                                                              |
 +==========================================================================================#
 
-export export_model, import_model, check_datasize, @memcheck
+export check_datasize, @memcheck
 
-function check_datasize(args::DeviceArgs{T1, T2}, 
-                        grid::DeviceGrid{T1, T2},
-                        mp  ::DeviceParticle{T1, T2},
-                        attr::DeviceProperty{T1, T2},
+function check_datasize(args::     DeviceArgs{T1, T2}, 
+                        grid::     DeviceGrid{T1, T2},
+                        mp  :: DeviceParticle{T1, T2},
+                        attr:: DeviceProperty{T1, T2},
                         bc  ::DeviceVBoundary{T1, T2}) where {T1, T2}
     args_mem  = Base.summarysize(args)
     grid_mem  = Base.summarysize(grid)

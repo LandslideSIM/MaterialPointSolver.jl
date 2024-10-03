@@ -9,14 +9,13 @@
 +==========================================================================================#
 
 using MaterialPointSolver
-using KernelAbstractions
 using CairoMakie
 using CUDA
 
 MaterialPointSolver.warmup(Val(:CUDA))
 
-init_grid_space_x = 0.0025
-init_grid_space_y = 0.0025
+init_grid_space_x = 0.00125
+init_grid_space_y = 0.00125
 init_grid_range_x = [-0.025, 0.82]
 init_grid_range_y = [-0.025, 0.12]
 init_mp_in_space  = 2
@@ -29,6 +28,8 @@ init_Gs           = init_Es / (2 * (1 +     init_ν))
 init_ΔT           = 0.5 * init_grid_space_x / sqrt(init_Es / init_ρs)
 init_step         = floor(init_T / init_ΔT / 200)
 init_ϕ            = deg2rad(19.8)
+init_NIC          = 16
+init_basis        = :uGIMP
 
 # args setup
 args = UserArgs2D(
@@ -39,8 +40,8 @@ args = UserArgs2D(
     FLIP         = 1,
     PIC          = 0,
     constitutive = :druckerprager,
-    basis        = :uGIMP,
-    animation    = true,
+    basis        = init_basis,
+    animation    = false,
     hdf5         = false,
     hdf5_step    = init_step,
     MVL          = false,
@@ -66,7 +67,7 @@ grid = UserGrid2D(
     y2    =  0.12,
     dx    =  0.0025,
     dy    =  0.0025,
-    NIC   = 16
+    NIC   = init_NIC
 )
 
 # material point setup
@@ -78,7 +79,7 @@ mpρs = ones(length(x_tmp)) * init_ρs
 mp = UserParticle2D(
     ϵ     = "FP64",
     phase = 1,
-    NIC   = 16,
+    NIC   = init_NIC,
     dx    = dx,
     dy    = dy,
     ξ     = [x_tmp y_tmp],
@@ -126,13 +127,14 @@ materialpointsolver!(args, grid, mp, attr, bc)
 let 
     figregular = MaterialPointSolver.tnr
     figbold = MaterialPointSolver.tnrb
-    fig = Figure(size=(400, 142), fonts=(; regular=figregular, bold=figbold), fontsize=12,
+    fig = Figure(size=(440, 142), fonts=(; regular=figregular, bold=figbold), fontsize=12,
         padding=0)
-    ax = Axis(fig[1, 1], aspect=DataAspect(), xlabel=L"x\ (m)", ylabel=L"y\ (m)")
-    p1 = scatter!(ax, mp.ξ, color=log10.(mp.ϵq.+1), markersize=1, colormap=:turbo,
+    ax = Axis(fig[1, 1], aspect=DataAspect(), xlabel=L"x\ (m)", ylabel=L"y\ (m)", 
+        xticks=(0:0.1:0.5), yticks=(0:0.05:0.1))
+    p1 = scatter!(ax, mp.ξ, color=log10.(mp.ϵq.+1), markersize=2, colormap=:turbo,
         colorrange=(0, 1.5))
     Colorbar(fig[1, 2], p1, spinewidth=0, label=L"log_{10}(\epsilon_{II}+1)", size=6)
-    limits!(ax, -0.02, 0.48, -0.02, 0.12)
+    limits!(ax, -0.02, 0.52, -0.02, 0.12)
     display(fig)
 end
 rm(joinpath(abspath(args.project_path), args.project_name), recursive=true, force=true)

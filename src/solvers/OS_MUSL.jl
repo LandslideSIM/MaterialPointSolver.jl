@@ -75,7 +75,7 @@ function procedure!(
         resetmpstatus_OS!(dev)(ndrange=mp.np, grid, mp, Val(args.basis))
     P2G_OS!(dev)(ndrange=mp.np, grid, mp, G)
     solvegrid_a_OS!(dev)(ndrange=grid.ni, grid, bc, ΔT, args.ζs)
-    doublemapping1_a_OS!(dev)(ndrange=mp.np, grid, mp, attr, ΔT)
+    doublemapping1_a_OS!(dev)(ndrange=mp.np, grid, mp, attr, ΔT, args.FLIP, args.PIC)
     doublemapping2_OS!(dev)(ndrange=mp.np, grid, mp)
     doublemapping3_OS!(dev)(ndrange=grid.ni, grid, bc, ΔT)
     G2P_OS!(dev)(ndrange=mp.np, grid, mp, ΔT)

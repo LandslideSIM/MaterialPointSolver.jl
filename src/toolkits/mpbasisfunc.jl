@@ -22,20 +22,9 @@ Standard `linear basis function` for MPM, where `Δx` is the distance between pa
     node, and `h` is the grid spacing.
 """
 @inline Base.@propagate_inbounds function linearBasis(Δx::T2, h::T2) where T2
-    # c1  = abs(Δx)≤h
-    # N1  = T2(1.0)-abs(Δx)/h
-    # dN1 = -sign(Δx)/h
-    # Ni  = c1*N1
-    # dN  = c1*dN1
-    # if abs(Δx) ≤ h
-    #     Ni = T2(1.0) - abs(Δx) / h
-    #     dN = -sign(Δx) / h
-    # else
-    #     Ni = T2(0.0)
-    #     dN = T2(0.0)
-    # end
-    Ni = T2(1.0) - abs(Δx) / h
-    dN = -sign(Δx) / h
+    h_denom = inv(h)
+    Ni = T2(1.0) - abs(Δx) * h_denom
+    dN = -sign(Δx) * h_denom
     return T2(Ni), T2(dN)
 end
 
@@ -49,19 +38,6 @@ between particle and node, `h` is the grid spacing, `lp` is the particle spacing
 """
 # This version will take a longer time since too many registers are used.
 @inline Base.@propagate_inbounds function uGIMPbasis(Δx::T2, h::T2, lp::T2) where T2
-    T1 = T2 == Float32 ? Int32 : Int64
-    # absΔx = abs(Δx); signΔx = sign(Δx)
-    # c1  = absΔx<(T2(0.5)*lp)
-    # c2  = (T2(0.5)*lp)≤absΔx<(h-T2(0.5)*lp)
-    # c3  = (h-T2(0.5)*lp)≤absΔx<(h+T2(0.5)*lp)
-    # Ni1 = T2(1.0)-((T2(4)*(Δx^T1(2))+lp^T1(2))/(T2(4)*h*lp))
-    # Ni2 = T2(1.0)-(absΔx/h)
-    # Ni3 = ((h+T2(0.5)*lp-absΔx)^T1(2))/(T2(2.0)*h*lp)
-    # dN1 = -((T2(8.0)*Δx)/(T2(4)*h*lp))
-    # dN2 = signΔx*(-T2(1.0)/h)
-    # dN3 = -signΔx*((h+T2(0.5)*lp-absΔx)/(h*lp))
-    # N   = c1*Ni1+c2*Ni2+c3*Ni3
-    # dN  = c1*dN1+c2*dN2+c3*dN3
     if abs(Δx) < T2(0.5)*lp
         Ni = T2(1.0) - ((T2(4.0) * Δx * Δx + lp * lp) / (T2(4.0) * h * lp))
         dN = -((T2(8.0) * Δx) / (T2(4.0) * h * lp))
@@ -69,7 +45,7 @@ between particle and node, `h` is the grid spacing, `lp` is the particle spacing
         Ni = T2(1.0) - (abs(Δx) / h)
         dN = sign(Δx) * (T2(-1.0) / h)
     elseif (h - T2(0.5) * lp) ≤ abs(Δx) < (h + T2(0.5) * lp)
-        Ni = ((h + T2(0.5) * lp - abs(Δx)) ^ T1(2)) / (T2(2.0) * h * lp)
+        Ni = ((h + T2(0.5) * lp - abs(Δx)) * (h + T2(0.5) * lp - abs(Δx))) / (T2(2.0) * h * lp)
         dN = -sign(Δx) * ((h + T2(0.5) * lp - abs(Δx)) / (h * lp))
     else
         Ni = T2(0.0)

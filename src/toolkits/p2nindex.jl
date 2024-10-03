@@ -17,7 +17,8 @@ export getP2N_linear, getP2N_uGIMP
 
 Description:
 ---
-Get the index of the node corresponding to the given cell index in the linear basis grid [2D].
+Get the index of the node corresponding to the given cell index in the linear basis grid 
+    [2D].
 
 ```julia
 col_id    = cld(i, ncy)       # belongs to which column

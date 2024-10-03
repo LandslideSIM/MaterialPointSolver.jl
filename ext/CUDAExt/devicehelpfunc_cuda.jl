@@ -21,6 +21,11 @@ function host2device(
     bc  ::DeviceVBoundary{T1, T2}, 
         ::Val{:CUDA}
 ) where {T1, T2}
+    # upload data to device
+    dev_grid = user_adapt(CuArray, grid)
+    dev_mp   = user_adapt(CuArray, mp)
+    dev_attr = user_adapt(CuArray, attr)
+    dev_bc   = user_adapt(CuArray, bc)
     # output info
     datasize = Base.summarysize(grid) + Base.summarysize(mp) +
                Base.summarysize(attr) + Base.summarysize(bc)
@@ -28,11 +33,6 @@ function host2device(
     dev_id   = CUDA.device().handle
     content  = "uploading [≈ $(outprint) GiB] → :CUDA [$(dev_id)]"
     println("\e[1;32m[▲ I/O:\e[0m \e[0;32m$(content)\e[0m")
-    # upload data to device
-    dev_grid = user_adapt(CuArray, grid)
-    dev_mp   = user_adapt(CuArray, mp)
-    dev_attr = user_adapt(CuArray, attr)
-    dev_bc   = user_adapt(CuArray, bc)
     return dev_grid, dev_mp, dev_attr, dev_bc
 end
 

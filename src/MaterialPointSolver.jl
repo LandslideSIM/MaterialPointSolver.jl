@@ -47,6 +47,8 @@ include(joinpath(@__DIR__, "type.jl"   ))
 include(joinpath(@__DIR__, "toolkit.jl" ))
 include(joinpath(@__DIR__, "solver.jl"  ))
 
+include(joinpath(@__DIR__, "extension/frictionExt.jl"))
+
 """
     materialpointsolver!(args::DeviceArgs{T1, T2}, grid::DeviceGrid{T1, T2}, 
         mp::DeviceParticle{T1, T2}, attr::DeviceProperty{T1, T2}, 

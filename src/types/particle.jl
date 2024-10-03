@@ -99,6 +99,7 @@ function UserParticle2D(; ϵ="FP64", phase=1, NIC=16, dx, dy, ξ, n=[0], ρs, ρ
     F   = repeat(T2[1 0 0 1] , np)
     ξ0  = copy(ξ)
     DoF = 2
+    size(ξ, 2) == DoF || throw(ArgumentError("ξ should have $(DoF) columns"))
     phase == 1 ? (np_new = 1 ; DoF_new = 1  ) :
     phase == 2 ? (np_new = np; DoF_new = DoF) : nothing
     ρs0   = copy(ρs)
@@ -229,6 +230,7 @@ function UserParticle3D(; ϵ="FP64", phase=1, NIC=16, dx, dy, dz, ξ, n=[0], ρs
     F   = repeat(T2[1 0 0 0 1 0 0 0 1] , np)
     ξ0  = copy(ξ)
     DoF = 3
+    size(ξ, 2) == DoF || throw(ArgumentError("ξ should have $(DoF) columns"))
     phase == 1 ? (np_new = 1 ; DoF_new = 1  ) :
     phase == 2 ? (np_new = np; DoF_new = DoF) : nothing
     ρs0   = copy(ρs)
