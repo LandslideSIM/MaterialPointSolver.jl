@@ -114,5 +114,5 @@ Get particles inside a domain.
         rst[i] = is_point_in_polygon(px, py, sorted_domain)
     end
 
-    return mesh[findall(rst), :]  # 使用BitVector时，直接findall即可
+    return copy(mesh[findall(rst), :])  # 使用BitVector时，直接findall即可
 end
