@@ -15,66 +15,50 @@
 +==========================================================================================#
 
 function host2device(
-    grid    ::GRID, 
-    mp      ::PARTICLE, 
-    pts_attr::PROPERTY, 
-    bc      ::BOUNDARY, 
-            ::Val{:CUDA}
-)
-    T1 = typeof(grid).parameters[1]
-    T2 = typeof(grid).parameters[2]
-    T3 = CuArray
-    if typeof(grid)<:Grid2D
-        dev_grid =      GPUGrid2D{T1, T2, T3, T3, T3    }(
-            [getfield(grid, f) for f in fieldnames(     Grid2D)]...)
-        dev_mp   =  GPUParticle2D{T1, T2, T3, T3, T3, T3}(
-            [getfield(mp  , f) for f in fieldnames( Particle2D)]...)
-        dev_pts_attr = GPUParticleProperty{T1, T2, T3, T3}(
-            [getfield(pts_attr, f) for f in fieldnames(ParticleProperty)]...)
-        dev_bc   = GPUVBoundary2D{T1, T2, T3, T3        }(
-            [getfield(bc  , f) for f in fieldnames(VBoundary2D)]...)
-    elseif typeof(grid)<:Grid3D
-        dev_grid =      GPUGrid3D{T1, T2, T3, T3, T3    }(
-            [getfield(grid, f) for f in fieldnames(     Grid3D)]...)
-        dev_mp   =  GPUParticle3D{T1, T2, T3, T3, T3, T3}(
-            [getfield(mp  , f) for f in fieldnames( Particle3D)]...)
-        dev_pts_attr = GPUParticleProperty{T1, T2, T3, T3}(
-            [getfield(pts_attr, f) for f in fieldnames(ParticleProperty)]...)
-        dev_bc   = GPUVBoundary3D{T1, T2, T3, T3        }(
-            [getfield(bc  , f) for f in fieldnames(VBoundary3D)]...)
-    end
-    datasize = Base.summarysize(grid)     + Base.summarysize(mp) +
-               Base.summarysize(pts_attr) + Base.summarysize(bc)
+    grid::     DeviceGrid{T1, T2}, 
+    mp  :: DeviceParticle{T1, T2}, 
+    attr:: DeviceProperty{T1, T2}, 
+    bc  ::DeviceVBoundary{T1, T2}, 
+        ::Val{:CUDA}
+) where {T1, T2}
+    # upload data to device
+    dev_grid = user_adapt(CuArray, grid)
+    dev_mp   = user_adapt(CuArray, mp)
+    dev_attr = user_adapt(CuArray, attr)
+    dev_bc   = user_adapt(CuArray, bc)
+    # output info
+    datasize = Base.summarysize(grid) + Base.summarysize(mp) +
+               Base.summarysize(attr) + Base.summarysize(bc)
     outprint = @sprintf("%.1f", datasize / 1024 ^ 3)
-    dev_id = CUDA.device().handle
-    content = "uploading [≈ $(outprint) GiB] → :CUDA [$(dev_id)]"
+    dev_id   = CUDA.device().handle
+    content  = "uploading [≈ $(outprint) GiB] → :CUDA [$(dev_id)]"
     println("\e[1;32m[▲ I/O:\e[0m \e[0;32m$(content)\e[0m")
-    return dev_grid, dev_mp, dev_pts_attr, dev_bc
+    return dev_grid, dev_mp, dev_attr, dev_bc
 end
 
 function device2host!(
-    args   ::MODELARGS, 
-    mp     ::PARTICLE, 
-    dev_mp ::GPUPARTICLE, 
+    args   ::    DeviceArgs{T1, T2}, 
+    mp     ::DeviceParticle{T1, T2}, 
+    dev_mp ::DeviceParticle{T1, T2}, 
            ::Val{:CUDA}; 
     verbose::Bool=false
-)
-    copyto!(mp.σm   , dev_mp.σm   )
-    copyto!(mp.Vs   , dev_mp.Vs   )
-    copyto!(mp.pos  , dev_mp.pos  )
-    copyto!(mp.vol  , dev_mp.vol  )
-    copyto!(mp.σij  , dev_mp.σij  )
-    copyto!(mp.epK  , dev_mp.epK  )
-    copyto!(mp.epII , dev_mp.epII )
-    copyto!(mp.dϵ   , dev_mp.dϵ   )
-    copyto!(mp.ϵij_s, dev_mp.ϵij_s)
-    copyto!(mp.Ms   , dev_mp.Ms   )
+) where {T1, T2}
+    copyto!(mp.σm  , dev_mp.σm  )
+    copyto!(mp.vs  , dev_mp.vs  )
+    copyto!(mp.ξ   , dev_mp.ξ   )
+    copyto!(mp.Ω   , dev_mp.Ω   )
+    copyto!(mp.σij , dev_mp.σij )
+    copyto!(mp.ϵk  , dev_mp.ϵk  )
+    copyto!(mp.ϵq  , dev_mp.ϵq  )
+    copyto!(mp.ϵv  , dev_mp.ϵv  )
+    copyto!(mp.ϵijs, dev_mp.ϵijs)
+    copyto!(mp.ms  , dev_mp.ms  )
     args.coupling==:TS ? (
-        copyto!(mp.Mw      , dev_mp.Mw      );
-        copyto!(mp.Vw      , dev_mp.Vw      );
-        copyto!(mp.σw      , dev_mp.σw      );
-        copyto!(mp.ϵij_w   , dev_mp.ϵij_w   );
-        copyto!(mp.porosity, dev_mp.porosity);
+        copyto!(mp.mw  , dev_mp.mw  );
+        copyto!(mp.vw  , dev_mp.vw  );
+        copyto!(mp.σw  , dev_mp.σw  );
+        copyto!(mp.ϵijw, dev_mp.ϵijw);
+        copyto!(mp.n   , dev_mp.n   );
     ) : nothing
     if verbose == true
         dev_id = CUDA.device().handle
@@ -85,26 +69,26 @@ function device2host!(
 end
 
 function clean_device!(
-    dev_grid    ::GPUGRID, 
-    dev_mp      ::GPUPARTICLE, 
-    dev_pts_attr::GPUPARTICLEPROPERTY, 
-    dev_bc      ::GPUBOUNDARY,
-                ::Val{:CUDA}
-)
+    dev_grid::     DeviceGrid{T1, T2}, 
+    dev_mp  :: DeviceParticle{T1, T2}, 
+    dev_attr:: DeviceProperty{T1, T2}, 
+    dev_bc  ::DeviceVBoundary{T1, T2},
+            ::Val{:CUDA}
+) where {T1, T2}
     for i in 1:nfields(dev_grid)
-        typeof(getfield(dev_grid, i))<:AbstractArray ? 
+        typeof(getfield(dev_grid, i)) <: AbstractArray ? 
             KernelAbstractions.unsafe_free!(getfield(dev_grid, i)) : nothing
     end
     for i in 1:nfields(dev_mp)
-        typeof(getfield(dev_mp, i))<:AbstractArray ?
+        typeof(getfield(dev_mp, i)) <: AbstractArray ?
             KernelAbstractions.unsafe_free!(getfield(dev_mp, i)) : nothing
     end
-    for i in 1:nfields(dev_pts_attr)
-        typeof(getfield(dev_pts_attr, i))<:AbstractArray ?
-            KernelAbstractions.unsafe_free!(getfield(dev_pts_attr, i)) : nothing
+    for i in 1:nfields(dev_attr)
+        typeof(getfield(dev_attr, i)) <: AbstractArray ?
+            KernelAbstractions.unsafe_free!(getfield(dev_attr, i)) : nothing
     end
     for i in 1:nfields(dev_bc)
-        typeof(getfield(dev_bc, i))<:AbstractArray ? 
+        typeof(getfield(dev_bc, i)) <: AbstractArray ? 
             KernelAbstractions.unsafe_free!(getfield(dev_bc, i)) : nothing
     end
     CUDA.reclaim()
@@ -125,20 +109,20 @@ function Tpeak(
     max_threads = CUDA.attribute(CUDA.device(), 
         CUDA.DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK)
     println("\e[1;36m[ Test:\e[0m device ($(CUDA.device().handle)) → $(datatype)")
-    dt = datatype==:FP64 ? Float64 : 
-         datatype==:FP32 ? Float32 : error("Wrong datatype!") 
+    dt = datatype == :FP64 ? Float64 : 
+         datatype == :FP32 ? Float32 : error("Wrong datatype!") 
     throughputs = Float64[]
 
     @inbounds for pow = Int(log2(32)):Int(log2(max_threads)) 
-        nx = ny = 32*2^pow
-        3*nx*ny*sizeof(dt)>CUDA.available_memory() ? break : nothing
+        nx = ny = 32 * 2^pow
+        3 * nx * ny * sizeof(dt) > CUDA.available_memory() ? break : nothing
         A = CUDA.rand(dt, nx, ny)
         B = CUDA.rand(dt, nx, ny)
         C = CUDA.rand(dt, nx, ny)
         # thread = (2^pow, 1)
         # block = (nx÷thread[1], ny)
         t_it = BenchmarkTools.@belapsed memcpy!($A, $B, $C, $bench_backend)
-        T_tot = 3*1/1024^3*nx*ny*sizeof(dt)/t_it
+        T_tot = 3 * 1 / 1024^3 * nx * ny * sizeof(dt) / t_it
         push!(throughputs, T_tot)
         # clean gpu memory
         KernelAbstractions.unsafe_free!(A)

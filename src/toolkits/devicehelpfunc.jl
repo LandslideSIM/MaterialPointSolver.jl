@@ -18,49 +18,57 @@
 export host2device, device2host!, clean_device!, memcpy!, Tpeak, getBackend, getArray
 
 """
-    host2device(grid::GRID, mp::PARTICLE, pts_attr::PROPERTY, bc::BOUNDARY, 
-        ::Val{:CPU})
+    host2device(grid::DeviceGrid{T1, T2}, mp::DeviceParticle{T1, T2}, 
+        attr::DeviceProperty{T1, T2}, bc::DeviceVBoundary{T1, T2}, ::Val{:CPU})
 
 Description:
 ---
 Transfer data from host to device. (2D & 3D)
 """
 function host2device(
-    grid    ::GRID, 
-    mp      ::PARTICLE, 
-    pts_attr::PROPERTY, 
-    bc      ::BOUNDARY, 
-            ::Val{:CPU}
-)
-    return grid, mp, pts_attr, bc
+    grid::     DeviceGrid{T1, T2}, 
+    mp  :: DeviceParticle{T1, T2}, 
+    attr:: DeviceProperty{T1, T2}, 
+    bc  ::DeviceVBoundary{T1, T2}, 
+        ::Val{:CPU}
+) where {T1, T2}
+    return grid, mp, attr, bc
 end
 
 """
-    device2host!(args::MODELARGS, mp::PARTICLE, dev_mp::GPUPARTICLE, ::Val{:CPU/:CUDA/...};
-        verbose::Bool=false)
+    device2host!(args::DeviceArgs{T1, T2}, mp::DeviceParticle{T1, T2}, 
+        dev_mp::GPUDeviceParticle{T1, T2}, ::Val{:CPU/:CUDA/...}; verbose::Bool=false)
 
 Description:
 ---
 Transfer data from device to host. (2D & 3D)
 """
-device2host!(args::MODELARGS, mp::PARTICLE, dev_mp::PARTICLE, ::Val{:CPU}; 
-    verbose::Bool=false) = nothing
+function device2host!(
+    args   ::    DeviceArgs{T1, T2}, 
+    mp     ::DeviceParticle{T1, T2}, 
+    dev_mp ::DeviceParticle{T1, T2}, 
+           ::Val{:CPU};
+    verbose::Bool=false
+) where {T1, T2}
+    return nothing
+end
 
 """ 
-    clean_device!(args::MODELARGS, dev_grid::GPUGRID, dev_mp::GPUPARTICLE, 
-        dev_pts_attr::GPUPARTICLEPROPERTY, dev_bc::GPUBOUNDARY, ::Val{:CPU/:CUDA/...})
+    clean_device!(args::DeviceArgs{T1, T2}, dev_grid::GPUDeviceGrid{T1, T2}, 
+        dev_mp::GPUDeviceParticle{T1, T2}, dev_attr::GPUDeviceParticle{T1, T2},
+        DeviceProperty{T1, T2}, dev_bc::GPUDeviceVBoundary{T1, T2}, ::Val{:CPU/:CUDA/...})
 
 Description:
 ---
 Clean the device memory.
 """
 function clean_device!(
-    dev_grid    ::GRID, 
-    dev_mp      ::PARTICLE, 
-    dev_pts_attr::PROPERTY, 
-    dev_bc      ::BOUNDARY,
-                ::Val{:CPU}
-)
+    dev_grid::     DeviceGrid{T1, T2}, 
+    dev_mp  :: DeviceParticle{T1, T2}, 
+    dev_attr:: DeviceProperty{T1, T2}, 
+    dev_bc  ::DeviceVBoundary{T1, T2},
+            ::Val{:CPU}
+) where {T1, T2}
     return nothing
 end
 
