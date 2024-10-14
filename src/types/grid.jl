@@ -76,14 +76,14 @@ end
 
 @user_struct Grid2D
 
-function UserGrid2D(; ϵ="FP64", phase=1, x1, x2, y1, y2, dx, dy, NIC=16, ext=0)
+function UserGrid2D(; ϵ="FP64", phase=1, x1, x2, y1, y2, dx, dy, NIC=9, ext=0)
     # input check
     x1 < x2 || throw(ArgumentError("x1 should be less than x2"))
     y1 < y2 || throw(ArgumentError("y1 should be less than y2"))
     dx > 0 && dy > 0 || throw(ArgumentError("dx and dy should be positive"))
     # default values
     phase = phase in [1, 2] ? phase : 1
-    NIC = NIC in [4, 16] ? NIC : 16
+    NIC = NIC in [4, 9] ? NIC : 9
     ext = ext == 0 ? TempGridExtra(rand(2)) : ext
     ϵ == ϵ in ["FP64", "FP32"] ? ϵ : "FP64"
     T1 = ϵ == "FP64" ? Int64 : Int32
@@ -128,12 +128,12 @@ function UserGrid2D(; ϵ="FP64", phase=1, x1, x2, y1, y2, dx, dy, NIC=16, ext=0)
     # set the computing cell to node topology
     if NIC == 4
         p2nD = T1.([0 1; 0 0; nny 1; nny 0])
-    elseif NIC == 16
+    elseif NIC == 9
         p2nD = T1.([
             -nny   2; -nny   1; -nny   0; -nny   -1       
-                0   2;    0   1;    0   0;    0   -1     
-                nny   2;  nny   1;  nny   0;  nny   -1       
-                nny*2 2;  nny*2 1;  nny*2 0;  nny*2 -1 
+               0   2;    0   1;    0   0;    0   -1     
+             nny   2;  nny   1;  nny   0;  nny   -1       
+             nny*2 2;  nny*2 1;  nny*2 0;  nny*2 -1 
         ])
     end
 
@@ -218,7 +218,7 @@ end
 
 @user_struct Grid3D
 
-function UserGrid3D(; ϵ="FP64", phase=1, x1, x2, y1, y2, z1, z2, dx, dy, dz, NIC=64, ext=0)
+function UserGrid3D(; ϵ="FP64", phase=1, x1, x2, y1, y2, z1, z2, dx, dy, dz, NIC=27, ext=0)
     # input check
     x1 < x2 || throw(ArgumentError("x1 should be less than x2"))
     y1 < y2 || throw(ArgumentError("y1 should be less than y2"))
@@ -227,7 +227,7 @@ function UserGrid3D(; ϵ="FP64", phase=1, x1, x2, y1, y2, z1, z2, dx, dy, dz, NI
         throw(ArgumentError("dx, dy, and dz should be positive"))
     # default values
     phase = phase in [1, 2] ? phase : 1
-    NIC = NIC in [8, 64] ? NIC : 64
+    NIC = NIC in [8, 27] ? NIC : 27
     ext = ext == 0 ? TempGridExtra(rand(2)) : ext
     ϵ == ϵ in ["FP64", "FP32"] ? ϵ : "FP64"
     T1 = ϵ == "FP64" ? Int64 : Int32
@@ -285,7 +285,7 @@ function UserGrid3D(; ϵ="FP64", phase=1, x1, x2, y1, y2, z1, z2, dx, dy, dz, NI
             -1 -1 -1; -1 0 -1; 0 0 -1; 0 -1 -1
             -1 -1  0; -1 0  0; 0 0  0; 0 -1  0
         ])
-    elseif NIC == 64
+    elseif NIC == 27
         p2nD = T1.([
             -1 -1 -1 +0; -1 -0 -1 +0; -0 -0 -1 +0; -0 -1 -1 +0; -0 -2 -1 +0; -1 -2 -1 +0 
             -2 -2 -1 +0; -2 -1 -1 +0; -2 -0 -1 +0; -2 +1 -1 +0; -1 +1 -1 +0; -0 +1 -1 +0 

@@ -38,6 +38,7 @@ between particle and node, `h` is the grid spacing, `lp` is the particle spacing
 """
 # This version will take a longer time since too many registers are used.
 @inline Base.@propagate_inbounds function uGIMPbasis(Δx::T2, h::T2, lp::T2) where T2
+    Ni = dN = T2(0.0)
     if abs(Δx) < T2(0.5)*lp
         Ni = T2(1.0) - ((T2(4.0) * Δx * Δx + lp * lp) / (T2(4.0) * h * lp))
         dN = -((T2(8.0) * Δx) / (T2(4.0) * h * lp))
@@ -47,9 +48,6 @@ between particle and node, `h` is the grid spacing, `lp` is the particle spacing
     elseif (h - T2(0.5) * lp) ≤ abs(Δx) < (h + T2(0.5) * lp)
         Ni = ((h + T2(0.5) * lp - abs(Δx)) * (h + T2(0.5) * lp - abs(Δx))) / (T2(2.0) * h * lp)
         dN = -sign(Δx) * ((h + T2(0.5) * lp - abs(Δx)) / (h * lp))
-    else
-        Ni = T2(0.0)
-        dN = T2(0.0)
     end
     return T2(Ni), T2(dN)
 end
@@ -63,6 +61,7 @@ end
     # smem[5] = T2(1.0) / h
     # smem[6] = T2(0.5) * lp
     absΔx = abs(Δx)
+    Ni = dN = T2(0.0)
     if absΔx < smem[6]
         Ni = T2(1.0) - ((T2(4.0) * Δx * Δx + smem[2] * smem[2]) * smem[3])
         dN = -T2(8.0) * Δx * smem[3]
@@ -72,9 +71,6 @@ end
     elseif smem[1] - smem[6] ≤ absΔx < smem[1] + smem[6]
         Ni = (smem[1] + smem[6] - absΔx) * (smem[1] + smem[6] - absΔx) * T2(0.5) * smem[4]
         dN = -sign(Δx) * (smem[1] + smem[6] - absΔx) * smem[4]
-    else
-        Ni = T2(0.0)
-        dN = T2(0.0)
     end
     return T2(Ni), T2(dN)
 end
@@ -87,6 +83,7 @@ end
     # smem[11] = T2(1.0) / h
     # smem[12] = T2(0.5) * lp
     absΔx = abs(Δx)
+    Ni = dN = T2(0.0)
     if absΔx < smem[12]
         Ni = T2(1.0) - ((T2(4.0) * Δx * Δx + smem[8] * smem[8]) * smem[9])
         dN = -T2(8.0) * Δx * smem[9]
@@ -96,9 +93,6 @@ end
     elseif smem[7] - smem[12] ≤ absΔx < smem[7] + smem[12]
         Ni = (smem[7] + smem[12] - absΔx) * (smem[7] + smem[12] - absΔx) * T2(0.5) * smem[10]
         dN = -sign(Δx) * (smem[7] + smem[12] - absΔx) * smem[10]
-    else
-        Ni = T2(0.0)
-        dN = T2(0.0)
     end
     return T2(Ni), T2(dN)
 end
@@ -111,6 +105,7 @@ end
     # smem[17] = T2(1.0) / h
     # smem[18] = T2(0.5) * lp
     absΔx = abs(Δx)
+    Ni = dN = T2(0.0)
     if absΔx < smem[18]
         Ni = T2(1.0) - ((T2(4.0) * Δx * Δx + smem[14] * smem[14]) * smem[15])
         dN = -T2(8.0) * Δx * smem[15]
@@ -120,9 +115,6 @@ end
     elseif smem[13] - smem[18] ≤ absΔx < smem[13] + smem[18]
         Ni = (smem[13] + smem[18] - absΔx) * (smem[13] + smem[18] - absΔx) * T2(0.5) * smem[16]
         dN = -sign(Δx) * (smem[13] + smem[18] - absΔx) * smem[16]
-    else
-        Ni = T2(0.0)
-        dN = T2(0.0)
     end
     return T2(Ni), T2(dN)
 end

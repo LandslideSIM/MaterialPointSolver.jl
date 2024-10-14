@@ -38,7 +38,7 @@ init_step         = floor(init_T / init_ΔT / 50)
 init_ϕ            = deg2rad(19.8)
 init_FP           = "FP64"
 init_basis        = :uGIMP
-init_NIC          = 64
+init_NIC          = 27
 
 # args setup
 args = UserArgs3D(

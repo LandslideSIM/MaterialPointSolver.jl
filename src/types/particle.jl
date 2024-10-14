@@ -82,12 +82,12 @@ end
 
 @user_struct Particle2D
 
-function UserParticle2D(; ϵ="FP64", phase=1, NIC=16, dx, dy, ξ, n=[0], ρs, ρw=[0], ext=0)
+function UserParticle2D(; ϵ="FP64", phase=1, NIC=9, dx, dy, ξ, n=[0], ρs, ρw=[0], ext=0)
     # input check
     dx > 0 && dy > 0 || throw(ArgumentError("dx and dy should be positive"))
     # default values
     phase = phase in [1, 2] ? phase : 1
-    NIC = NIC in [4, 16] ? NIC : 16
+    NIC = NIC in [4, 9] ? NIC : 9
     ext = ext == 0 ? TempParticleExtra(rand(2)) : ext
     ϵ == ϵ in ["FP64", "FP32"] ? ϵ : "FP64"
     T1 = ϵ == "FP64" ? Int64 : Int32
@@ -211,14 +211,14 @@ end
 
 @user_struct Particle3D
 
-function UserParticle3D(; ϵ="FP64", phase=1, NIC=16, dx, dy, dz, ξ, n=[0], ρs, ρw=[0], 
+function UserParticle3D(; ϵ="FP64", phase=1, NIC=27, dx, dy, dz, ξ, n=[0], ρs, ρw=[0], 
     ext=0)
     # input check
     dx > 0 && dy > 0 && dz > 0 || 
         throw(ArgumentError("dx, dy, and dz should be positive"))
     # default values
     phase = phase in [1, 2] ? phase : 1
-    NIC = NIC in [8, 64] ? NIC : 64
+    NIC = NIC in [8, 27] ? NIC : 27
     ext = ext == 0 ? TempParticleExtra(rand(2)) : ext
     ϵ == ϵ in ["FP64", "FP32"] ? ϵ : "FP64"
     T1 = ϵ == "FP64" ? Int64 : Int32

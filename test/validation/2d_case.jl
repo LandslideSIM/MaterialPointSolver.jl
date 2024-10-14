@@ -28,7 +28,7 @@ init_Gs           = init_Es / (2 * (1 +     init_ν))
 init_ΔT           = 0.5 * init_grid_space_x / sqrt(init_Es / init_ρs)
 init_step         = floor(init_T / init_ΔT / 200)
 init_ϕ            = deg2rad(19.8)
-init_NIC          = 16
+init_NIC          = 9
 init_basis        = :uGIMP
 
 # args setup
@@ -137,4 +137,4 @@ let
     limits!(ax, -0.02, 0.52, -0.02, 0.12)
     display(fig)
 end
-rm(joinpath(abspath(args.project_path), args.project_name), recursive=true, force=true)
+#rm(joinpath(abspath(args.project_path), args.project_name), recursive=true, force=true)
