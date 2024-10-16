@@ -23,6 +23,7 @@ include(joinpath(@__DIR__, "materials/mohrcoulomb.jl"  ))
 include(joinpath(@__DIR__, "materials/hyperelastic.jl" ))
 
 export procedure!
+export submit_work!
 
 """
     submit_work!(args::DeviceArgs2D{T1, T2}, grid::DeviceGrid2D{T1, T2}, 

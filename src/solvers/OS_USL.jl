@@ -10,7 +10,7 @@
 +==========================================================================================#
 
 export solvegrid_USL_OS!
-export solvegrid_a_USL_OS!
+export solvegrid_a_USL_OS!, doublemapping1_a_USL_OS!
 
 """
     solvegrid_USL_OS!(grid::DeviceGrid2D{T1, T2}, bc::DeviceVBoundary2D{T1, T2}, ΔT::T2, 
@@ -182,6 +182,49 @@ end
     end
 end
 
+@kernel inbounds = true function doublemapping1_a_USL_OS!(
+    grid::    DeviceGrid2D{T1, T2},
+    mp  ::DeviceParticle2D{T1, T2},
+    attr::  DeviceProperty{T1, T2},
+    ΔT  ::T2,
+    FLIP::T2,
+    PIC ::T2
+) where {T1, T2}
+    # 4/3 = 1.333333
+    ix = @index(Global)
+    # update particle position & velocity
+    if ix ≤ mp.np
+        nid = attr.nid[ix]
+        Ks  = attr.Ks[nid]
+        Gs  = attr.Gs[nid]
+        tmp_vx = tmp_vy = tmp_px = tmp_py = T2(0.0)
+        # update particle position
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
+            Ni = mp.Nij[ix, iy]
+            if Ni ≠ T2(0.0)
+                p2n = mp.p2n[ix, iy]
+                tmp_px += Ni * grid.vs[p2n, 1]
+                tmp_py += Ni * grid.vs[p2n, 2]
+                tmp_vx += Ni * grid.as[p2n, 1]
+                tmp_vy += Ni * grid.as[p2n, 2]
+            end
+        end
+        mp.ξ[ix, 1] += tmp_px * ΔT
+        mp.ξ[ix, 2] += tmp_py * ΔT
+        # update particle velocity
+        mp.vs[ix, 1] = FLIP * mp.vs[ix, 1] + PIC * tmp_px + tmp_vx * ΔT
+        mp.vs[ix, 2] = FLIP * mp.vs[ix, 2] + PIC * tmp_py + tmp_vy * ΔT
+        # update particle momentum
+        mp.ps[ix, 1] = mp.ms[ix] * mp.vs[ix, 1]
+        mp.ps[ix, 2] = mp.ms[ix] * mp.vs[ix, 2]
+        # # update CFL conditions
+        # sqr = sqrt((Ks + Gs * T2(1.333333)) / mp.ρs[ix]) # 4/3 ≈ 1.333333
+        # cd_sx = grid.dx / (sqr + abs(mp.vs[ix, 1]))
+        # cd_sy = grid.dy / (sqr + abs(mp.vs[ix, 2]))
+        # mp.cfl[ix] = min(cd_sx, cd_sy)
+    end
+end
+
 @kernel inbounds=true function solvegrid_a_USL_OS!(
     grid::    DeviceGrid3D{T1, T2},
     bc  ::DeviceVBoundary3D{T1, T2},
@@ -229,6 +272,56 @@ end
     end
 end
 
+@kernel inbounds = true function doublemapping1_a_USL_OS!(
+    grid::    DeviceGrid3D{T1, T2},
+    mp  ::DeviceParticle3D{T1, T2},
+    attr::  DeviceProperty{T1, T2},
+    ΔT  ::T2,
+    FLIP::T2,
+    PIC ::T2
+) where {T1, T2}
+    # 4/3 = 1.333333
+    ix = @index(Global)
+    # update particle position & velocity
+    if ix ≤ mp.np
+        nid = attr.nid[ix]
+        Ks  = attr.Ks[nid]
+        Gs  = attr.Gs[nid]
+        tmp_vx = tmp_vy = tmp_vz = T2(0.0)
+        tmp_px = tmp_py = tmp_pz = T2(0.0)
+        # update particle position
+        @KAunroll for iy in Int32(1):Int32(mp.NIC)
+            Ni = mp.Nij[ix, iy]
+            if Ni ≠ T2(0.0)
+                p2n = mp.p2n[ix, iy]
+                tmp_px += Ni * grid.vs[p2n, 1]
+                tmp_py += Ni * grid.vs[p2n, 2]
+                tmp_pz += Ni * grid.vs[p2n, 3]
+                tmp_vx += Ni * grid.as[p2n, 1]
+                tmp_vy += Ni * grid.as[p2n, 2]
+                tmp_vz += Ni * grid.as[p2n, 3]
+            end
+        end
+        mp.ξ[ix, 1] += tmp_px * ΔT
+        mp.ξ[ix, 2] += tmp_py * ΔT
+        mp.ξ[ix, 3] += tmp_pz * ΔT
+        # update particle velocity
+        mp.vs[ix, 1] = FLIP * mp.vs[ix, 1] + PIC * tmp_px + tmp_vx * ΔT
+        mp.vs[ix, 2] = FLIP * mp.vs[ix, 2] + PIC * tmp_py + tmp_vy * ΔT
+        mp.vs[ix, 3] = FLIP * mp.vs[ix, 3] + PIC * tmp_pz + tmp_vz * ΔT
+        # update particle momentum
+        mp.ps[ix, 1] = mp.ms[ix] * mp.vs[ix, 1]
+        mp.ps[ix, 2] = mp.ms[ix] * mp.vs[ix, 2]
+        mp.ps[ix, 3] = mp.ms[ix] * mp.vs[ix, 3]
+        # # update CFL conditions
+        # sqr = sqrt((Ks + Gs * T2(1.333333)) / mp.ρs[ix])
+        # cd_sx = grid.dx / (sqr + abs(mp.vs[ix, 1]))
+        # cd_sy = grid.dy / (sqr + abs(mp.vs[ix, 2]))
+        # cd_sz = grid.dz / (sqr + abs(mp.vs[ix, 3]))
+        # mp.cfl[ix] = min(cd_sx, cd_sy, cd_sz)
+    end
+end
+
 function procedure!(
     args::     DeviceArgs{T1, T2}, 
     grid::     DeviceGrid{T1, T2}, 
@@ -249,7 +342,7 @@ function procedure!(
         resetmpstatus_OS!(dev)(ndrange=mp.np, grid, mp, Val(args.basis))
     P2G_OS!(dev)(ndrange=mp.np, grid, mp, G)
     solvegrid_a_USL_OS!(dev)(ndrange=grid.ni, grid, bc, ΔT, args.ζs)
-    doublemapping1_a_OS!(dev)(ndrange=mp.np, grid, mp, attr, ΔT, args.FLIP, args.PIC)
+    doublemapping1_a_USL_OS!(dev)(ndrange=mp.np, grid, mp, attr, ΔT, args.FLIP, args.PIC)
     G2P_OS!(dev)(ndrange=mp.np, grid, mp, ΔT)
     if args.constitutive == :hyperelastic
         hyE!(dev)(ndrange=mp.np, mp, attr)

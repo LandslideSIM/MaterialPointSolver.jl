@@ -37,8 +37,6 @@ end
 
 # export functions
 export materialpointsolver!
-export submit_work!
-export sysinfo
 export @KAatomic, @KAunroll, KAsync
 export @suppress
 export user_adapt, @user_struct

@@ -89,7 +89,7 @@ function procedure!(
         resetmpstatus_OS!(dev)(ndrange=mp.np, grid, mp, Val(args.basis))
     P2G_OS!(dev)(ndrange=mp.np, grid, mp, G)
     solvegrid_a_USL_OS!(dev)(ndrange=grid.ni, grid, bc, ΔT, args.ζs)
-    doublemapping1_a_OS!(dev)(ndrange=mp.np, grid, mp, attr, ΔT, args.FLIP, args.PIC)
+    doublemapping1_a_USL_OS!(dev)(ndrange=mp.np, grid, mp, attr, ΔT, args.FLIP, args.PIC)
     if args.MVL == true
         vollock1_OS!(dev)(ndrange=mp.np, grid, mp)
         vollock2_OS!(dev)(ndrange=mp.np, grid, mp)
