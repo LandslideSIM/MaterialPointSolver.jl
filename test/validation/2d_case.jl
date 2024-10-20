@@ -76,7 +76,7 @@ dx = grid.dx / init_mp_in_space
 dy = grid.dy / init_mp_in_space
 pts = meshbuilder(0 + dx / 2 : dx : 0.2 - dx / 2,
                   0 + dy / 2 : dy : 0.1 - dy / 2)
-mpρs = ones(length(x_tmp)) * init_ρs
+mpρs = ones(size(pts, 1)) * init_ρs
 mp = UserParticle2D(
     ϵ     = init_ϵ,
     phase = 1,
