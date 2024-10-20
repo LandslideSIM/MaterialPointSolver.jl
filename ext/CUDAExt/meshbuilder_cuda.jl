@@ -20,8 +20,7 @@ function getparticle(geo_path::String, size_min, size_max, lp, ::Val{:CUDA})
     min_z -= offsetz
     max_z += offsetz
     # generate structured particles
-    x_, y_, z_ = meshbuilder(min_x:lp:max_x, min_y:lp:max_y, min_z:lp:max_z)
-    pts = hcat(x_, y_, z_)
+    pts = meshbuilder(min_x:lp:max_x, min_y:lp:max_y, min_z:lp:max_z)
     pts_num = size(pts, 1)
     results = Vector{Bool}(zeros(pts_num))
     # print terminal info
