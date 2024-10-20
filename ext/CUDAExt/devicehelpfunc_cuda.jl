@@ -77,19 +77,19 @@ function clean_device!(
 ) where {T1, T2}
     for i in 1:nfields(dev_grid)
         typeof(getfield(dev_grid, i)) <: AbstractArray ? 
-            KernelAbstractions.unsafe_free!(getfield(dev_grid, i)) : nothing
+            CUDA.unsafe_free!(getfield(dev_grid, i)) : nothing
     end
     for i in 1:nfields(dev_mp)
         typeof(getfield(dev_mp, i)) <: AbstractArray ?
-            KernelAbstractions.unsafe_free!(getfield(dev_mp, i)) : nothing
+            CUDA.unsafe_free!(getfield(dev_mp, i)) : nothing
     end
     for i in 1:nfields(dev_attr)
         typeof(getfield(dev_attr, i)) <: AbstractArray ?
-            KernelAbstractions.unsafe_free!(getfield(dev_attr, i)) : nothing
+            CUDA.unsafe_free!(getfield(dev_attr, i)) : nothing
     end
     for i in 1:nfields(dev_bc)
         typeof(getfield(dev_bc, i)) <: AbstractArray ? 
-            KernelAbstractions.unsafe_free!(getfield(dev_bc, i)) : nothing
+            CUDA.unsafe_free!(getfield(dev_bc, i)) : nothing
     end
     CUDA.reclaim()
     dev_id = CUDA.device().handle
@@ -125,9 +125,9 @@ function Tpeak(
         T_tot = 3 * 1 / 1024^3 * nx * ny * sizeof(dt) / t_it
         push!(throughputs, T_tot)
         # clean gpu memory
-        KernelAbstractions.unsafe_free!(A)
-        KernelAbstractions.unsafe_free!(B)
-        KernelAbstractions.unsafe_free!(C)
+        CUDA.unsafe_free!(A)
+        CUDA.unsafe_free!(B)
+        CUDA.unsafe_free!(C)
         CUDA.reclaim()
     end
     value = round(maximum(throughputs), digits=2)

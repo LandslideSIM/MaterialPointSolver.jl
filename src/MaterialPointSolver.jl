@@ -10,7 +10,7 @@
 
 module MaterialPointSolver
 
-using Adapt, BenchmarkTools, Dates, DelimitedFiles, HDF5, KernelAbstractions, Printf, 
+using Adapt, BenchmarkTools, Dates, DelimitedFiles, Gmsh, HDF5, KernelAbstractions, Printf, 
       ProgressMeter, SysInfo, WriteVTK # PrecompileTools
 
 import KernelAbstractions.synchronize as KAsync

@@ -6,11 +6,31 @@
 |  Programmer : Zenan Huo                                                                  |
 |  Start Date : 01/01/2022                                                                 |
 |  Affiliation: Risk Group, UNIL-ISTE                                                      |
-|  Functions  : 1. savevtu()   [2D & 3D]                                                   |
+|  Functions  : 1. fastvtu()                                                               |
+|               2. savevtu()   [2D & 3D]                                                   |
 |               3. animation() [2D & 3D]                                                   |
 +==========================================================================================#
 
-export savevtu, animation
+export fastvtu, savevtu, animation
+
+"""
+    fastvtu(coords; vtupath="output", data::T=NamedTuple())
+
+Description:
+---
+Generates a `.vtu` file by passing custom fields.
+"""
+function fastvtu(coords; vtupath="output", data::T=NamedTuple()) where T <: NamedTuple
+    pts_num = size(coords, 1)
+    vtu_cls = [MeshCell(VTKCellTypes.VTK_VERTEX, [i]) for i in 1:pts_num]
+    vtu_pts = Array{Float64}(coords')
+    vtk_grid(vtupath, vtu_pts, vtu_cls) do vtk
+        keys(data) ≠ () && for vtu_key in keys(data)
+            vtk[string(vtu_key)] = getfield(data, vtu_key)
+        end
+    end
+    return nothing
+end
 
 """
     savevtu(args::DeviceArgs2D{T1, T2}, grid::DeviceGrid2D{T1, T2}, 
