@@ -16,7 +16,7 @@ export getparticle
 function meshbuilder(x::AbstractRange, y::AbstractRange)
     x_tmp = repeat(x', length(y), 1) |> vec
     y_tmp = repeat(y , 1, length(x)) |> vec
-    return x_tmp, y_tmp
+    return hcat(x_tmp, y_tmp)
 end
 
 function meshbuilder(x::AbstractRange, y::AbstractRange, z::AbstractRange)
@@ -33,7 +33,7 @@ function meshbuilder(x::AbstractRange, y::AbstractRange, z::AbstractRange)
     x_tmp   = vec(vx[om, :, oo])
     y_tmp   = vec(vy[:, on, oo])
     z_tmp   = vec(vz[om, on, :])
-    return x_tmp, y_tmp, z_tmp
+    return hcat(x_tmp, y_tmp, z_tmp)
 end
 
 """
@@ -99,8 +99,7 @@ Get particles inside a domain.
     y_min -= offsety
     y_max += offsety
 
-    x_, y_ = meshbuilder(x_min:lp:x_max, y_min:lp:y_max)
-    mesh = hcat(x_, y_)
+    mesh = meshbuilder(x_min:lp:x_max, y_min:lp:y_max)
 
     pts = size(mesh, 1)
 
@@ -192,7 +191,6 @@ Check if the point set is inside a polyhedron.
                 continue  # 粒子不在该四面体的包围盒内，跳过
             end
 
-
             # 计算原四面体的体积
             v0x, v0y, v0z = bx - ax, by - ay, bz - az
             v1x, v1y, v1z = cx - ax, cy - ay, cz - az
@@ -265,8 +263,7 @@ function getparticle(geo_path::String, size_min, size_max, lp, ::Val{:CPU})
     min_z -= offsetz
     max_z += offsetz
     # generate structured particles
-    x_, y_, z_ = meshbuilder(min_x:lp:max_x, min_y:lp:max_y, min_z:lp:max_z)
-    pts = hcat(x_, y_, z_)
+    pts = meshbuilder(min_x:lp:max_x, min_y:lp:max_y, min_z:lp:max_z)
     pts_num = size(pts, 1)
     results = Vector{Bool}(zeros(pts_num))
     pts_in_polyhedron!(CPU())(ndrange=pts_num, pts, node, tet, results)

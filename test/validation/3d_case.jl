@@ -69,27 +69,27 @@ args = UserArgs3D(
 # grid setup
 grid = UserGrid3D(
     ϵ     = init_FP,
-    phase =  1,
-    x1    = -0.02,
-    x2    =  0.07,
-    y1    = -0.02,
-    y2    =  0.75,
-    z1    = -0.02,
-    z2    =  0.12,
-    dx    =  init_grid_space_x,
-    dy    =  init_grid_space_y,
-    dz    =  init_grid_space_z,
-    NIC   =  init_NIC
+    phase = 1,
+    x1    = init_grid_range_x[1],
+    x2    = init_grid_range_x[2],
+    y1    = init_grid_range_y[1],
+    y2    = init_grid_range_y[2],
+    z1    = init_grid_range_z[1],
+    z2    = init_grid_range_z[2],
+    dx    = init_grid_space_x,
+    dy    = init_grid_space_y,
+    dz    = init_grid_space_z,
+    NIC   = init_NIC
 )
 
 # material point setup
 dx = grid.dx / init_mp_in_space
 dy = grid.dy / init_mp_in_space
 dz = grid.dz / init_mp_in_space
-x_tmp, y_tmp, z_tmp = meshbuilder(0 + dx / 2 : dx : 0.05 - dx / 2,
-                                  0 + dy / 2 : dy : 0.20 - dy / 2,
-                                  0 + dz / 2 : dz : 0.10 - dz / 2)
-mpρs = ones(length(x_tmp)) * init_ρs
+pts = meshbuilder(0 + dx / 2 : dx : 0.05 - dx / 2,
+                  0 + dy / 2 : dy : 0.20 - dy / 2,
+                  0 + dz / 2 : dz : 0.10 - dz / 2)
+mpρs = ones(size(pts, 1)) * init_ρs
 mp = UserParticle3D(
     ϵ     = init_FP,
     phase = 1,
@@ -97,7 +97,7 @@ mp = UserParticle3D(
     dx    = dx,
     dy    = dy,
     dz    = dz,
-    ξ     = [x_tmp y_tmp z_tmp],
+    ξ     = pts,
     ρs    = mpρs
 )
 
@@ -156,4 +156,4 @@ let
         halign=:right, valign=:top, flipaxis=false)
     display(fig)
 end
-#rm(joinpath(abspath(args.project_path), args.project_name), recursive=true, force=true)
+rm(joinpath(abspath(args.project_path), args.project_name), recursive=true, force=true)

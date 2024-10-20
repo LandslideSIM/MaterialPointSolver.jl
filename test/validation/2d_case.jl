@@ -14,8 +14,8 @@ using CUDA
 
 MaterialPointSolver.warmup(Val(:CUDA))
 
-init_grid_space_x = 0.00125
-init_grid_space_y = 0.00125
+init_grid_space_x = 0.0025
+init_grid_space_y = 0.0025
 init_grid_range_x = [-0.025, 0.82]
 init_grid_range_y = [-0.025, 0.12]
 init_mp_in_space  = 2
@@ -30,6 +30,7 @@ init_step         = floor(init_T / init_ΔT / 200)
 init_ϕ            = deg2rad(19.8)
 init_NIC          = 9
 init_basis        = :uGIMP
+init_ϵ            = "FP64"
 
 # args setup
 args = UserArgs2D(
@@ -48,49 +49,48 @@ args = UserArgs2D(
     device       = :CUDA,
     coupling     = :OS,
     scheme       = :MUSL,
-    va           = :v,
+    va           = :a,
     progressbar  = true,
     gravity      = -9.8,
     ζs           = 0,
     project_name = "2d_case",
     project_path = @__DIR__,
-    ϵ            = "FP64"
+    ϵ            = init_ϵ
 )
 
 # grid setup
 grid = UserGrid2D(
-    ϵ     = "FP64",
-    phase =  1,
-    x1    = -0.025,
-    x2    =  0.82,
-    y1    = -0.025,
-    y2    =  0.12,
-    dx    =  0.0025,
-    dy    =  0.0025,
+    ϵ     = init_ϵ,
+    phase = 1,
+    x1    = init_grid_range_x[1],
+    x2    = init_grid_range_x[2],
+    y1    = init_grid_range_y[1],
+    y2    = init_grid_range_y[2],
+    dx    = init_grid_space_x,
+    dy    = init_grid_space_y,
     NIC   = init_NIC
 )
 
 # material point setup
 dx = grid.dx / init_mp_in_space
 dy = grid.dy / init_mp_in_space
-x_tmp, y_tmp = meshbuilder(0 + dx / 2 : dx : 0.2 - dx / 2,
-                           0 + dy / 2 : dy : 0.1 - dy / 2)
+pts = meshbuilder(0 + dx / 2 : dx : 0.2 - dx / 2,
+                  0 + dy / 2 : dy : 0.1 - dy / 2)
 mpρs = ones(length(x_tmp)) * init_ρs
 mp = UserParticle2D(
-    ϵ     = "FP64",
+    ϵ     = init_ϵ,
     phase = 1,
     NIC   = init_NIC,
     dx    = dx,
     dy    = dy,
-    ξ     = [x_tmp y_tmp],
-    n     = [0],
+    ξ     = pts,
     ρs    = mpρs
 )
 
 # property setup
 nid = ones(mp.np)
 attr = UserProperty(
-    ϵ   = "FP64",
+    ϵ   = init_ϵ,
     nid = nid,
     ν   = [init_ν],
     Es  = [init_Es],
@@ -114,7 +114,7 @@ tmp_idy = findall(i -> grid.ξ[i, 2] ≤ 0, 1:grid.ni)
 vx_idx[tmp_idx] .= 1
 vy_idx[tmp_idy] .= 1
 bc = UserVBoundary2D(
-    ϵ        = "FP64",
+    ϵ        = init_ϵ,
     vx_s_idx = vx_idx,
     vx_s_val = zeros(grid.ni),
     vy_s_idx = vy_idx,
@@ -137,4 +137,4 @@ let
     limits!(ax, -0.02, 0.52, -0.02, 0.12)
     display(fig)
 end
-#rm(joinpath(abspath(args.project_path), args.project_name), recursive=true, force=true)
+rm(joinpath(abspath(args.project_path), args.project_name), recursive=true, force=true)
