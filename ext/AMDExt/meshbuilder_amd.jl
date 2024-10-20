@@ -1,4 +1,4 @@
-function getparticle(geo_path::String, size_min, size_max, lp, ::Val{:CUDA})
+function getparticle(geo_path::String, size_min, size_max, lp, ::Val{:ROCm})
     local node, tet
     @suppress node, tet = gmsh_mesh3D(geo_path, size_min, size_max)
     # terminal info
@@ -27,23 +27,25 @@ function getparticle(geo_path::String, size_min, size_max, lp, ::Val{:CUDA})
     datasize = Base.summarysize(results) + Base.summarysize(pts) +
                Base.summarysize(node   ) + Base.summarysize(tet)
     outprint = @sprintf("%.1f", datasize / 1024 ^ 3)
-    dev_id   = CUDA.device().handle
-    content  = "uploading [≈ $(outprint) GiB] → :CUDA [$(dev_id)]"
+    dev_id   = AMDGPU.device().device_id
+    content  = "uploading [≈ $(outprint) GiB] → :ROCm [$(dev_id)]"
     println("\e[1;32m[▲ I/O:\e[0m \e[0;32m$(content)\e[0m")
     # upload data to device
-    rst_dev = CuArray(results)
-    pts_dev = CuArray(pts)
-    nde_dev = CuArray(node)
-    tet_dev = CuArray(tet)
+    rst_dev = ROCArray(results)
+    pts_dev = ROCArray(pts)
+    nde_dev = ROCArray(node)
+    tet_dev = ROCArray(tet)
     # run kernel
-    pts_in_polyhedron!(CUDABackend())(ndrange=pts_num, pts_dev, nde_dev, tet_dev, rst_dev)
+    pts_in_polyhedron!(ROCBackend())(ndrange=pts_num, pts_dev, nde_dev, tet_dev, rst_dev)
     copyto!(results, rst_dev) # download data from device
     # clean device
-    CUDA.unsafe_free!(rst_dev)
-    CUDA.unsafe_free!(pts_dev)
-    CUDA.unsafe_free!(nde_dev)
-    CUDA.unsafe_free!(tet_dev)
-    CUDA.reclaim()
+    AMDGPU.unsafe_free!(rst_dev)
+    AMDGPU.unsafe_free!(pts_dev)
+    AMDGPU.unsafe_free!(nde_dev)
+    AMDGPU.unsafe_free!(tet_dev)
+    #=======================================================================================
+    | !!! HERE NEED A FUNCTION LIKE CUDA.reclaim()                                         |
+    =======================================================================================#
     # return pts in polyhedron
     return copy(pts[findall(i -> results[i], 1:pts_num), :])
 end
