@@ -1,2 +1,316 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>One-phase single-point MPM · MaterialPointSolver.jl</title><meta name="title" content="One-phase single-point MPM · MaterialPointSolver.jl"/><meta property="og:title" content="One-phase single-point MPM · MaterialPointSolver.jl"/><meta property="twitter:title" content="One-phase single-point MPM · MaterialPointSolver.jl"/><meta name="description" content="Documentation for MaterialPointSolver.jl."/><meta property="og:description" content="Documentation for MaterialPointSolver.jl."/><meta property="twitter:description" content="Documentation for MaterialPointSolver.jl."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="MaterialPointSolver.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">MaterialPointSolver.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Interface</span><ul><li><a class="tocitem" href="../../interface/structs/">Structs design</a></li><li><a class="tocitem" href="../../interface/kernelfunctions/">Kernel functions</a></li><li><a class="tocitem" href="../../interface/mpmprocess/">MPM processes</a></li><li><a class="tocitem" href="../../interface/backendagnostic/">Backend-agnostic solver</a></li><li><a class="tocitem" href="../../interface/workflow/">Solver&#39;s workflow</a></li><li><a class="tocitem" href="../../interface/import/">Import computing models</a></li><li><a class="tocitem" href="../../interface/export/">Export simulation results</a></li></ul></li><li><span class="tocitem">Tutorials</span><ul><li class="is-active"><a class="tocitem" href>One-phase single-point MPM</a></li><li><a class="tocitem" href="../example2/">Two-phase single-point MPM</a></li><li><a class="tocitem" href="../example3/">Elastic discs collision</a></li></ul></li><li><span class="tocitem">Advanced Topics</span><ul><li><a class="tocitem" href="../../advancedtopics/customkernel/">Custom kernel functions</a></li><li><a class="tocitem" href="../../advancedtopics/customconstitutive/">Custom constitutive models</a></li><li><a class="tocitem" href="../../advancedtopics/custommpmprocess/">Custom MPM processes</a></li><li><a class="tocitem" href="../../advancedtopics/customextension/">Custom struct extensions</a></li><li><a class="tocitem" href="../../advancedtopics/customfriction/">Custom friction boundary</a></li></ul></li><li><a class="tocitem" href="../../utils/">Useful Tools</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>One-phase single-point MPM</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>One-phase single-point MPM</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/LandslideSIM/MaterialPointSolver.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/LandslideSIM/MaterialPointSolver.jl/blob/main/docs/src/tutorials/example1.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="One-phase-single-point-MPM"><a class="docs-heading-anchor" href="#One-phase-single-point-MPM">One-phase single-point MPM</a><a id="One-phase-single-point-MPM-1"></a><a class="docs-heading-anchor-permalink" href="#One-phase-single-point-MPM" title="Permalink"></a></h1></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../interface/export/">« Export simulation results</a><a class="docs-footer-nextpage" href="../example2/">Two-phase single-point MPM »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.1 on <span class="colophon-date" title="Saturday 15 February 2025 19:22">Saturday 15 February 2025</span>. Using Julia version 1.11.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>One-phase single-point MPM · MaterialPointSolver.jl</title><meta name="title" content="One-phase single-point MPM · MaterialPointSolver.jl"/><meta property="og:title" content="One-phase single-point MPM · MaterialPointSolver.jl"/><meta property="twitter:title" content="One-phase single-point MPM · MaterialPointSolver.jl"/><meta name="description" content="Documentation for MaterialPointSolver.jl."/><meta property="og:description" content="Documentation for MaterialPointSolver.jl."/><meta property="twitter:description" content="Documentation for MaterialPointSolver.jl."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="MaterialPointSolver.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">MaterialPointSolver.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Interface</span><ul><li><a class="tocitem" href="../../interface/structs/">Structs design</a></li><li><a class="tocitem" href="../../interface/kernelfunctions/">Kernel functions</a></li><li><a class="tocitem" href="../../interface/mpmprocess/">MPM processes</a></li><li><a class="tocitem" href="../../interface/backendagnostic/">Backend-agnostic solver</a></li><li><a class="tocitem" href="../../interface/workflow/">Solver&#39;s workflow</a></li><li><a class="tocitem" href="../../interface/import/">Import computing models</a></li><li><a class="tocitem" href="../../interface/export/">Export simulation results</a></li></ul></li><li><span class="tocitem">Tutorials</span><ul><li class="is-active"><a class="tocitem" href>One-phase single-point MPM</a><ul class="internal"><li><a class="tocitem" href="#2D-model-description"><span>2D model description</span></a></li><li><a class="tocitem" href="#2D-code-explaination"><span>2D code explaination</span></a></li><li><a class="tocitem" href="#3D-model-description"><span>3D model description</span></a></li><li><a class="tocitem" href="#3D-code-explaination"><span>3D code explaination</span></a></li></ul></li><li><a class="tocitem" href="../example2/">Two-phase single-point MPM</a></li><li><a class="tocitem" href="../example3/">Elastic discs collision</a></li></ul></li><li><span class="tocitem">Advanced Topics</span><ul><li><a class="tocitem" href="../../advancedtopics/customkernel/">Custom kernel functions</a></li><li><a class="tocitem" href="../../advancedtopics/customconstitutive/">Custom constitutive models</a></li><li><a class="tocitem" href="../../advancedtopics/custommpmprocess/">Custom MPM processes</a></li><li><a class="tocitem" href="../../advancedtopics/customextension/">Custom struct extensions</a></li><li><a class="tocitem" href="../../advancedtopics/customfriction/">Custom friction boundary</a></li></ul></li><li><a class="tocitem" href="../../utils/">Useful Tools</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>One-phase single-point MPM</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>One-phase single-point MPM</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/LandslideSIM/MaterialPointSolver.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/LandslideSIM/MaterialPointSolver.jl/blob/main/docs/src/tutorials/example1.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="One-phase-single-point-MPM"><a class="docs-heading-anchor" href="#One-phase-single-point-MPM">One-phase single-point MPM</a><a id="One-phase-single-point-MPM-1"></a><a class="docs-heading-anchor-permalink" href="#One-phase-single-point-MPM" title="Permalink"></a></h1><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><ol><li><p>We use a classic example: 2D &amp; 3D granular collapse<sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup><sup class="footnote-reference"><a id="citeref-2" href="#footnote-2">[2]</a></sup>, to demonstrate how to establish computational models and solve them. </p></li><li><p>To successfully run the code, we will install the dependencies at the beginning of the code provided below. If you are already familiar with the Julia Pkg ENV and have installed the necessary packages, you can ignore this part.</p></li><li><p>We default to using Nvidia&#39;s GPU or x86/ARM CPUs. If you want to use other acceleration backends, please make modifications in the appropriate places in the code.</p></li><li><p>We use Unicode to enhance readability (when comparing formulas), but sometimes it may be confused with regular letters, such as <span>$\nu$</span> and <code>v</code>. If you are using VSCode, you can enable the following in the settings:</p><pre><code class="language-json hljs">&quot;editor.unicodeHighlight.ambiguousCharacters&quot;: true,</code></pre></li><li><p>You can copy and save it in the <code>your_file.jl</code> and run the file directly using Julia in <code>REPL</code>:</p><pre><code class="language-julia-repl hljs">julia&gt; include(&quot;path/to/your_file.jl&quot;)</code></pre><p>Or run this file in the terminal:</p><pre><code class="language-bash hljs">bash&gt; julia path/to/your_file.jl</code></pre></li></ol></div></div><p>Here is the complete 2D code:</p><details class="admonition is-details"><summary class="admonition-header">Details</summary><div class="admonition-body"><pre><code class="language-julia hljs">using Pkg
+Pkg.add([&quot;MaterialPointSolver&quot;, &quot;MaterialPointGenerator&quot;, &quot;CairoMakie&quot;, &quot;CUDA&quot;])
+using MaterialPointSolver
+using MaterialPointGenerator
+using CairoMakie
+using CUDA
+
+MaterialPointSolver.warmup(Val(:CUDA))
+
+init_grid_space_x = 0.0025
+init_grid_space_y = 0.0025
+init_grid_range_x = [-0.025, 0.82]
+init_grid_range_y = [-0.025, 0.12]
+init_mp_in_space  = 2
+init_T            = 1
+init_ρs           = 2650
+init_ν            = 0.3
+init_Ks           = 7e5
+init_Es           = init_Ks * (3 * (1 - 2 * init_ν))
+init_Gs           = init_Es / (2 * (1 +     init_ν))
+init_ΔT           = 0.5 * init_grid_space_x / sqrt(init_Es / init_ρs)
+init_step         = floor(init_T / init_ΔT / 200)
+init_ϕ            = deg2rad(19.8)
+init_NIC          = 9
+init_basis        = :uGIMP
+init_ϵ            = &quot;FP64&quot;
+
+# args setup
+args = UserArgs2D(
+    Ttol         = init_T,
+    Te           = 0,
+    ΔT           = init_ΔT,
+    time_step    = :fixed,
+    FLIP         = 1,
+    PIC          = 0,
+    constitutive = :druckerprager,
+    basis        = init_basis,
+    hdf5         = false,
+    hdf5_step    = init_step,
+    MVL          = false,
+    device       = :CPU,
+    coupling     = :OS,
+    scheme       = :MUSL,
+    progressbar  = true,
+    gravity      = -9.8,
+    ζs           = 0,
+    project_name = &quot;2d_collapse&quot;,
+    project_path = @__DIR__,
+    ϵ            = init_ϵ
+)
+
+# grid setup
+grid = UserGrid2D(
+    ϵ     = init_ϵ,
+    phase = 1,
+    x1    = init_grid_range_x[1],
+    x2    = init_grid_range_x[2],
+    y1    = init_grid_range_y[1],
+    y2    = init_grid_range_y[2],
+    dx    = init_grid_space_x,
+    dy    = init_grid_space_y,
+    NIC   = init_NIC
+)
+
+# material point setup
+dx = grid.dx / init_mp_in_space
+dy = grid.dy / init_mp_in_space
+ξ0 = meshbuilder(0 + dx / 2 : dx : 0.2 - dx / 2,
+                0 + dy / 2 : dy : 0.1 - dy / 2)
+mp = UserParticle2D(
+    ϵ     = init_ϵ,
+    phase = 1,
+    NIC   = init_NIC,
+    dx    = dx,
+    dy    = dy,
+    ξ     = ξ0,
+    ρs    = ones(size(ξ0, 1)) .* init_ρs
+)
+
+# property setup
+nid = ones(mp.np)
+attr = UserProperty(
+    ϵ   = init_ϵ,
+    nid = nid,
+    ν   = [init_ν],
+    Es  = [init_Es],
+    Gs  = [init_Gs],
+    Ks  = [init_Ks],
+    σt  = [0],
+    ϕ   = [init_ϕ],
+    ϕr  = [0],
+    ψ   = [0],
+    c   = [0],
+    cr  = [0],
+    Hp  = [0]
+)
+
+# boundary setup
+vx_idx = zeros(grid.ni)
+vy_idx = zeros(grid.ni)
+tmp_idx = findall(i -&gt; grid.ξ[i, 1] ≤ 0.0 || grid.ξ[i, 1] ≥ 0.8 ||
+                    grid.ξ[i, 2] ≤ 0, 1:grid.ni)
+tmp_idy = findall(i -&gt; grid.ξ[i, 2] ≤ 0, 1:grid.ni)
+vx_idx[tmp_idx] .= 1
+vy_idx[tmp_idy] .= 1 
+bc = UserVBoundary2D(
+    ϵ        = init_ϵ,
+    vx_s_idx = vx_idx,
+    vx_s_val = zeros(grid.ni),
+    vy_s_idx = vy_idx,
+    vy_s_val = zeros(grid.ni)
+)
+
+# solver setup
+materialpointsolver!(args, grid, mp, attr, bc)
+
+# post-processing
+let 
+    figregular = MaterialPointSolver.tnr
+    figbold = MaterialPointSolver.tnrb
+    fig = Figure(size=(440, 142), fonts=(; regular=figregular, bold=figbold), fontsize=12,
+        padding=0)
+    ax = Axis(fig[1, 1], aspect=DataAspect(), xlabel=L&quot;x\ (m)&quot;, ylabel=L&quot;y\ (m)&quot;, 
+        xticks=(0:0.1:0.5), yticks=(0:0.05:0.1))
+    p1 = scatter!(ax, mp.ξ, color=log10.(mp.ϵq.+1), markersize=2, colormap=:turbo,
+        colorrange=(0, 1.5))
+    Colorbar(fig[1, 2], p1, spinewidth=0, label=L&quot;log_{10}(\epsilon_{II}+1)&quot;, size=6)
+    limits!(ax, -0.02, 0.52, -0.02, 0.12)
+    display(fig)
+end</code></pre></div></details><p>Here is the complete 2D code:</p><details class="admonition is-details"><summary class="admonition-header">Details</summary><div class="admonition-body"><pre><code class="language-julia hljs">using Pkg
+Pkg.add([&quot;MaterialPointSolver&quot;, &quot;MaterialPointGenerator&quot;, &quot;CairoMakie&quot;, &quot;CUDA&quot;])
+using MaterialPointSolver
+using MaterialPointGenerator
+using CairoMakie
+using CUDA
+
+MaterialPointSolver.warmup(Val(:CUDA))
+
+init_grid_space_x = 0.0025
+init_grid_space_y = 0.0025
+init_grid_space_z = 0.0025
+init_grid_range_x = [-0.02, 0.07]
+init_grid_range_y = [-0.02, 0.75]
+init_grid_range_z = [-0.02, 0.12]
+init_mp_in_space  = 2
+init_T            = 1
+init_ρs           = 2650
+init_ν            = 0.3
+init_Ks           = 7e5
+init_Es           = init_Ks * (3 * (1 - 2 * init_ν))
+init_Gs           = init_Es / (2 * (1 +     init_ν))
+init_ΔT           = 0.5 * init_grid_space_x / sqrt(init_Es / init_ρs)
+init_step         = floor(init_T / init_ΔT / 50)
+init_ϕ            = deg2rad(19.8)
+init_FP           = &quot;FP64&quot;
+init_basis        = :uGIMP
+init_NIC          = 27
+
+# args setup
+args = UserArgs3D(
+    Ttol         = init_T,
+    Te           = 0,
+    ΔT           = init_ΔT,
+    time_step    = :fixed,
+    FLIP         = 1,
+    PIC          = 0,
+    constitutive = :druckerprager,
+    basis        = init_basis,
+    hdf5         = false,
+    hdf5_step    = init_step,
+    MVL          = false,
+    device       = :CUDA,
+    coupling     = :OS,
+    scheme       = :MUSL,
+    gravity      = -9.8,
+    ζs           = 0,
+    project_name = &quot;3d_collapse&quot;,
+    project_path = @__DIR__,
+    ϵ            = init_FP
+)
+
+# grid setup
+grid = UserGrid3D(
+    ϵ     = init_FP,
+    phase = 1,
+    x1    = init_grid_range_x[1],
+    x2    = init_grid_range_x[2],
+    y1    = init_grid_range_y[1],
+    y2    = init_grid_range_y[2],
+    z1    = init_grid_range_z[1],
+    z2    = init_grid_range_z[2],
+    dx    = init_grid_space_x,
+    dy    = init_grid_space_y,
+    dz    = init_grid_space_z,
+    NIC   = init_NIC
+)
+
+# material point setup
+dx = grid.dx / init_mp_in_space
+dy = grid.dy / init_mp_in_space
+dz = grid.dz / init_mp_in_space
+pts = meshbuilder(0 + dx / 2 : dx : 0.05 - dx / 2,
+                0 + dy / 2 : dy : 0.20 - dy / 2,
+                0 + dz / 2 : dz : 0.10 - dz / 2)
+mpρs = ones(size(pts, 1)) * init_ρs
+mp = UserParticle3D(
+    ϵ     = init_FP,
+    phase = 1,
+    NIC   = init_NIC,
+    dx    = dx,
+    dy    = dy,
+    dz    = dz,
+    ξ     = pts,
+    ρs    = mpρs
+)
+
+# property setup
+nid = ones(mp.np)
+attr = UserProperty(
+    ϵ   = init_FP,
+    nid = nid,
+    ν   = [init_ν],
+    Es  = [init_Es],
+    Gs  = [init_Gs],
+    Ks  = [init_Ks],
+    σt  = [0],
+    ϕ   = [init_ϕ],
+    ϕr  = [0],
+    ψ   = [0],
+    c   = [0],
+    cr  = [0],
+    Hp  = [0]
+)
+
+# boundary setup
+vx_idx  = zeros(grid.ni)
+vy_idx  = zeros(grid.ni)
+vz_idx  = zeros(grid.ni)
+tmp_idx = findall(i -&gt; grid.ξ[i, 1] ≤ 0 || grid.ξ[i, 1] ≥ 0.05 ||
+                    grid.ξ[i, 3] ≤ 0 || grid.ξ[i, 2] ≤ 0, 1:grid.ni)
+tmp_idy = findall(i -&gt; grid.ξ[i, 2] ≤ 0 || grid.ξ[i, 3] ≤ 0, 1:grid.ni)
+tmp_idz = findall(i -&gt; grid.ξ[i, 3] ≤ 0, 1:grid.ni)
+vx_idx[tmp_idx] .= 1
+vy_idx[tmp_idy] .= 1
+vz_idx[tmp_idz] .= 1
+bc = UserVBoundary3D(
+    ϵ        = init_FP,
+    vx_s_idx = vx_idx,
+    vx_s_val = zeros(grid.ni),
+    vy_s_idx = vy_idx,
+    vy_s_val = zeros(grid.ni),
+    vz_s_idx = vz_idx,
+    vz_s_val = zeros(grid.ni)
+)
+
+# solver setup
+materialpointsolver!(args, grid, mp, attr, bc)
+
+# post-processing
+let
+    figfont = MaterialPointSolver.tnr
+    fig = Figure(size=(1200, 700), fonts=(; regular=figfont, bold=figfont), fontsize=30)
+    ax = Axis3(fig[1, 1], xlabel=L&quot;x\ (m)&quot;, ylabel=L&quot;y\ (m)&quot;, zlabel=L&quot;z\ (m)&quot;, 
+        aspect=:data, azimuth=0.2*π, elevation=0.1*π, xlabeloffset=60, zlabeloffset=80,
+        protrusions=100, xticks=(0:0.04:0.04), height=450, width=950)
+    pl1 = scatter!(ax, mp.ξ, color=log10.(mp.ϵq.+1), colormap=:jet, markersize=3,
+        colorrange=(0, 1))
+    Colorbar(fig[1, 1], limits=(0, 1), colormap=:jet, size=16, ticks=0:0.5:1, spinewidth=0,
+        label=L&quot;log_{10}(\epsilon_{II}+1)&quot;, vertical=false, tellwidth=false, width=200,
+        halign=:right, valign=:top, flipaxis=false)
+    display(fig)
+end</code></pre></div></details><hr/><h2 id="2D-model-description"><a class="docs-heading-anchor" href="#2D-model-description">2D model description</a><a id="2D-model-description-1"></a><a class="docs-heading-anchor-permalink" href="#2D-model-description" title="Permalink"></a></h2><p>In this example, aluminum bars are used to model the non-cohesive soil collapse. We use uGIMP to simulate the failure process of soil collapse. The geometry of the numerical model is depicted in the figure, with a length <span>$l$</span> of <span>$0.2\ m$</span> and a height <span>$h$</span> of <span>$0.1\ m$</span>. The parameters of the numerical model are provided in the Table.</p><img src="./figures/exp_model.png" width=50%><table><tr><th style="text-align: center">Parameter</th><th style="text-align: center">Value</th><th style="text-align: center">Unit</th><th style="text-align: center">Description</th></tr><tr><td style="text-align: center"><span>$\rho$</span></td><td style="text-align: center"><span>$2650$</span></td><td style="text-align: center"><span>$kg/m^3$</span></td><td style="text-align: center">density</td></tr><tr><td style="text-align: center"><span>$\mu$</span></td><td style="text-align: center"><span>$0.3$</span></td><td style="text-align: center">-</td><td style="text-align: center">Poisson&#39;s ratio</td></tr><tr><td style="text-align: center"><span>$K$</span></td><td style="text-align: center"><span>$7\times 10^5$</span></td><td style="text-align: center"><span>$Pa$</span></td><td style="text-align: center">bulk modulus</td></tr><tr><td style="text-align: center"><span>$t_{sim}$</span></td><td style="text-align: center"><span>$1.0$</span></td><td style="text-align: center">second</td><td style="text-align: center">simulation time</td></tr><tr><td style="text-align: center"><span>$\phi$</span></td><td style="text-align: center"><span>$19.8$</span></td><td style="text-align: center">degree</td><td style="text-align: center">friction angle</td></tr><tr><td style="text-align: center"><span>$\alpha$</span></td><td style="text-align: center"><span>$1.0$</span></td><td style="text-align: center">-</td><td style="text-align: center">FLIP-PIC mixing factor</td></tr></table><h2 id="2D-code-explaination"><a class="docs-heading-anchor" href="#2D-code-explaination">2D code explaination</a><a id="2D-code-explaination-1"></a><a class="docs-heading-anchor-permalink" href="#2D-code-explaination" title="Permalink"></a></h2><p>Step1: We import the required packages and perform warming up (optional):</p><pre><code class="language-julia hljs">using MaterialPointSolver              # MPM solver
+using MaterialPointGenerator           # Particle generator
+using CairoMakie                       # post-processing
+using CUDA                             # backend package
+
+MaterialPointSolver.warmup(Val(:CUDA)) # warm-up</code></pre><p>Step2: Some values used in the simulation:</p><pre><code class="language-julia hljs">init_grid_space_x = 0.0025                                            # background grid space in x direction
+init_grid_space_y = 0.0025                                            # background grid space in y direction
+init_grid_range_x = [-0.025, 0.82]                                    # background grid x range
+init_grid_range_y = [-0.025, 0.12]                                    # background grid y range
+init_mp_in_space  = 2                                                 # there are 2 particles in x direction per cell, so 4 in total per cell
+init_T            = 1                                                 # simulation time, here is 1 second
+init_ρs           = 2650                                              # particle density
+init_ν            = 0.3                                               # Poisson&#39;s ratio
+init_Ks           = 7e5                                               # bulk modulus
+init_Es           = init_Ks * (3 * (1 - 2 * init_ν))                  # elastic modulus
+init_Gs           = init_Es / (2 * (1 +     init_ν))                  # shear modulus
+init_ΔT           = 0.5 * init_grid_space_x / sqrt(init_Es / init_ρs) # time step in second
+init_step         = floor(init_T / init_ΔT / 200)                     # save data into hdf5 per 200 time steps
+init_ϕ            = deg2rad(19.8)                                     # friction angle
+init_NIC          = 9                                                 # 9 is used for uGIMP in 2D
+init_basis        = :uGIMP                                            # basis function
+init_ϵ            = &quot;FP64&quot;                                            # computing precision</code></pre><p>Step3: Initialize <code>Args2D</code>:</p><pre><code class="language-julia hljs"># args setup
+args = UserArgs2D(
+    Ttol         = init_T,
+    Te           = 0,
+    ΔT           = init_ΔT,
+    time_step    = :fixed,
+    FLIP         = 1,
+    PIC          = 0,
+    constitutive = :druckerprager, # constitutive model
+    basis        = init_basis,
+    hdf5         = false,
+    hdf5_step    = init_step,
+    MVL          = false,
+    device       = :CPU,           # use CPU for the simulation 
+    coupling     = :OS,            # one-phase single-point mpm
+    scheme       = :MUSL,          # stress update scheme
+    progressbar  = true,
+    gravity      = -9.8,
+    ζs           = 0,              # damping force factor
+    project_name = &quot;2d_collapse&quot;,  # project name
+    project_path = @__DIR__,       # project path
+    ϵ            = init_ϵ
+)</code></pre><h2 id="3D-model-description"><a class="docs-heading-anchor" href="#3D-model-description">3D model description</a><a id="3D-model-description-1"></a><a class="docs-heading-anchor-permalink" href="#3D-model-description" title="Permalink"></a></h2><h2 id="3D-code-explaination"><a class="docs-heading-anchor" href="#3D-code-explaination">3D code explaination</a><a id="3D-code-explaination-1"></a><a class="docs-heading-anchor-permalink" href="#3D-code-explaination" title="Permalink"></a></h2><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>A footnote definition uses the <code>[^label]: ...</code> syntax in a block scope.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>asda</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../interface/export/">« Export simulation results</a><a class="docs-footer-nextpage" href="../example2/">Two-phase single-point MPM »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.1 on <span class="colophon-date" title="Sunday 16 February 2025 19:52">Sunday 16 February 2025</span>. Using Julia version 1.11.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
